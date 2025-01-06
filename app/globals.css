@@ -1,21 +1,67 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+  /* PRIMARY  STRUCTURAL STLYES */
+  /*         */
+  /* These are the styles for named ID tags for the TRIBES OF ME website.  */
+  /* They are listed by page and then alphabetically                       */
+  /*///////////////////////////////////////////////////////////////////////*/
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: purple;
+    padding: 0px;
   }
-}
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+  .remove-all-margin-padding{
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  /* ID TAGS */
+  /*         */
+  /* These are the styles for named ID tags for the MSM Portfolio site.  */
+  /* They are listed by page and then alphabetically                     */
+  /*/////////////////////////////////////////////////////////////////////*/
+
+  #left {
+    background-image: url("/images/style_art/flannelBlack.svg");
+    background-repeat: repeat;
+    display: inline-block;
+    width: 50%;
+    height: 100%;
+  }
+  #right {
+    background-image: url("/images/style_art/redPolkaDots.svg");
+    display: inline-block;
+    width: 50%;
+    height:100%;
+  }
+
+  #primary {
+    position: absolute;
+    top: 35px;
+    width: 45%;
+    height: 45%;
+    margin-left: 25%;
+    background-color: rgba(245, 241, 39, 0.95);
+    text-align: center;
+    border-style: dashed;
+    border-width: 9px;
+    border-color: purple;
+    padding: 5rem;
+  }
+  h1{
+    font-family: gastromond, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 4.5em;
+  }
+  h1.sans{
+    font-family: semplicitapro, sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 2.5em;
+  }
+  h2.sans{
+    font-family: semplicitapro, sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 1em;
+  }
