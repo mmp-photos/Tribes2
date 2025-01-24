@@ -3,12 +3,32 @@
   /* These are the styles for named ID tags for the TRIBES OF ME website.  */
   /* They are listed by page and then alphabetically                       */
   /*///////////////////////////////////////////////////////////////////////*/
-
-  body {
-    background-color: purple;
-    padding: 0px;
+  
+  :root{
+      /* DEFINE COLORS FOR WEBSITE */
+      --background-color: #e8dff4;
+      --impact-color :#4818a2;
+      --light-blue: #76b8dc;
+      --dark-green: #3b688c;
+      --brown: #c6845f;
+      --white: #f2f6f3; 
+      padding: 0px;
+      margin: 0px;
   }
 
+  body {
+    background-color: var(--white);
+    margin: 0px;
+  }
+
+  main{
+    height: 9rem;
+    background-color: var(--white);
+  }
+
+  .error{
+    color: var(--impact-color);
+  }
   .remove-all-margin-padding{
     margin:0 !important;
     padding:0 !important;
@@ -51,17 +71,22 @@
     font-family: gastromond, sans-serif;
     font-weight: 400;
     font-style: normal;
-    font-size: 4.5em;
+    font-size: 3.5em;
+    color: var(--impact-color);
   }
-  h1.sans{
-    font-family: semplicitapro, sans-serif;
-    font-weight: 600;
+  h2{
+    font-family: gastromond, sans-serif;
     font-style: normal;
-    font-size: 2.5em;
+    font-size: 2em;
   }
-  h2.sans{
-    font-family: semplicitapro, sans-serif;
-    font-weight: 600;
-    font-style: normal;
-    font-size: 1em;
+  h6{
+    margin: auto;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--white);
+  }
+
+  footer{
+    background-color: var(--light-blue);
+    padding: 2rem;
   }
