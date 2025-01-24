@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 
 interface User {
   _id: string;
-  username: string;
-  dateCreated: string;
+  name: string;
 }
 
 const testUsersAPI = async () => {
@@ -13,11 +12,7 @@ const testUsersAPI = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        firstName: "Lucy",
-        lastName: "Van Pelt",
-        email: "placeKicker@peanuts.com",
-        password: "password"
-    }),
+      }),
     });
 
     if (!res.ok) {
@@ -70,7 +65,7 @@ const allUsers: React.FC = () => {
         <ul>
           {data.map((user) => (
             <li key={user._id}>
-              {user.username}
+              {user.name}
             </li>
           ))}
         </ul>

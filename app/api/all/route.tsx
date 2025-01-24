@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     try {
         if (!mongoose.connection.readyState) {
             console.log("Connecting to MongoDB...");
-            await mongoose.connect(MONGODB_URI!);
+            await mongoose.connect(process.env.ATLAS_URI!);
             console.log("Mongoose connected to MongoDB.");
           }
         const body = await req.json();
