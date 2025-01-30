@@ -13,7 +13,9 @@ const testUsersAPI = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: 'beard@afcrichmond.com'
+        user: {
+          email: "beard@afcrichmond.com"
+        }
       }),
     });
 

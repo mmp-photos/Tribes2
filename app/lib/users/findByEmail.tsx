@@ -5,11 +5,9 @@ interface CreateUserInput {
     password: string;
 }
 
-export async function findByUser(userInput: CreateUserInput) {
-    const userToFind = userInput
+export async function findByUserOld(userInput: CreateUserInput) {
     try {
         // Check if a user with the same email already exists
-        console.log(userInput.email)
         const existingUser = await UserModel.findOne({ email: userInput.email });
         console.log(existingUser);
         if (existingUser) {
