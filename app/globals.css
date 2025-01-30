@@ -6,26 +6,49 @@
   
   :root{
       /* DEFINE COLORS FOR WEBSITE */
-      --background-color: #e8dff4;
-      --impact-color :#4818a2;
-      --light-blue: #76b8dc;
-      --dark-green: #3b688c;
-      --brown: #c6845f;
-      --white: #f2f6f3; 
+      --background-primary: #c363d0;
+      --background-secondary: #76b8dc;
+      --background-tertiary: #c6845f;
+      --mid-primary: #bb2ad1;
+      --mid-secondary: #3b688c;
+      --mid-tertiary: #893553;
+      --bright-primary: #7e2bd0;
+      --bright-secondary: #252c3f;
+      --bright-tertiary: #4818a2;
+      --black: #201610;
+      --white: #e8dff4;
+      --true-black: black;
+      --true-white: white;
       padding: 0px;
       margin: 0px;
   }
 
   body {
-    background-color: var(--white);
+    background-color: var(--bright-secondary);
     margin: 0px;
   }
-
-  main{
-    height: 9rem;
-    background-color: var(--white);
+  #flex-wrapper{
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
   }
-
+  header{
+    background-color: var(--white);
+    min-height: 5rem;
+    max-height: 15rem;
+    padding: 0rem .25rem 0rem 2rem;
+  }
+  main{
+    min-height: calc(100vh - 15rem);
+    background-color: var(--white);
+    padding:  0rem 1.5rem;
+  }
+  footer{
+    max-height: 5rem;
+    background-color: var(--background-secondary);
+    padding: 2rem;
+  }
   .error{
     color: var(--impact-color);
   }
@@ -36,9 +59,9 @@
 
   /* ID TAGS */
   /*         */
-  /* These are the styles for named ID tags for the MSM Portfolio site.  */
-  /* They are listed by page and then alphabetically                     */
-  /*/////////////////////////////////////////////////////////////////////*/
+  /* These are the styles for named ID tags for the Tribes of Men website.  */
+  /* They are listed by page and then alphabetically                       */
+  /*//////////////////////////////////////////////////////////////////////*/
 
   #left {
     background-image: url("/images/style_art/flannelBlack.svg");
@@ -72,21 +95,17 @@
     font-weight: 400;
     font-style: normal;
     font-size: 3.5em;
-    color: var(--impact-color);
+    color: var(--bright-primary);
   }
   h2{
     font-family: gastromond, sans-serif;
     font-style: normal;
     font-size: 2em;
+    color: var(--black);
   }
   h6{
     margin: auto;
     text-align: center;
     font-size: 1rem;
     color: var(--white);
-  }
-
-  footer{
-    background-color: var(--light-blue);
-    padding: 2rem;
   }

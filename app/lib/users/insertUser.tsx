@@ -1,5 +1,6 @@
 import { UserModel } from "../../models/UserSchema";
 import { NextResponse } from 'next/server';
+import { connectToDatabase } from "../databasae/connectToDatabase";
 
 interface CreateUserInput {
     email: string;
@@ -15,6 +16,7 @@ interface CreateUserInput {
 }
 
 export async function insertUser(userInput: CreateUserInput) {
+        
     try {
         // Check if a user with the same email already exists
         const existingUser = await UserModel.findOne({ email: userInput.email });

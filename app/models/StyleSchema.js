@@ -3,41 +3,111 @@ import bcrypt from "bcrypt";
 
 const styleSchema = new Schema(
   {
-    email: {
+    name: {
       type: String,
       required: true,
       unique: true,
       trim: true,
     },
-    password: {
+    description: {
       type: String,
-      required: true,
-      trim: true,
+      required: false,
     },
-    accountType: {
+    attitude: {
       type: String,
-      required: true,
-      default: "tribesman",
+      required: false,
     },
-    dateCreated: {
-      type: Date,
-      required: true,
+    vibe: {
+      type: String,
+      required: false,
     },
-    lastLogin: {
-      type: Date,
+    colorFamily: {
+      type: String,
+      required: false,
     },
-    lastLogout: {
-      type: Date,
+    colors: [
+      {
+        color_id: {
+          type: Schema.Types.ObjectId, 
+          color: "Colors", // Reference to the Photos collection
+        },
+      },
+    ],
+    tops: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
+    bottoms: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
+    headwear: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
+    footwear: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
+    outerwear: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
+    accessories: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
+    photos: [
+      {
+        photo_id: {
+          type: Schema.Types.ObjectId, // ObjectId reference to the Photos collection
+          ref: "Photos", // Reference to the Photos collection
+        },
+        caption: {
+          type: String, // Caption as a string
+        },
+      },
+    ],
+    tribesmen: [
+      {
+        person_id: {
+          type: Schema.Types.ObjectId, // ObjectId reference to the Photos collection
+          ref: "Photos", // Reference to the Photos collection
+        },
+        caption: {
+          type: String, // Caption as a string
+        },
+      },
+    ],
+    elders: [
+      {
+        person_id: {
+          type: Schema.Types.ObjectId, // ObjectId reference to the Photos collection
+          ref: "Photos", // Reference to the Photos collection
+        },
+        caption: {
+          type: String, // Caption as a string
+        },
+      },
+    ],
+    createdBy: {
+      type: { type: MyObjectId, ref: 'Users' },
     },
-    termsAccepted: {
-      type: { type: MyObjectId, ref: 'Terms' },
+    updatedBy: {
+      type: { type: MyObjectId, ref: 'Users' },
     },
-    termsAcceptedOn: {
-      type: Date,
-    },
-    profile: {
-      type: { type: MyObjectId, ref: 'Terms' },
-    }
   },
   {
     timestamps: {

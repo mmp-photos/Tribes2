@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 interface User {
   _id: string;
   name: string;
+  email: string;
 }
 
 const testUsersAPI = async () => {
@@ -12,6 +13,7 @@ const testUsersAPI = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        email: 'beard@afcrichmond.com'
       }),
     });
 
@@ -65,7 +67,7 @@ const allUsers: React.FC = () => {
         <ul>
           {data.map((user) => (
             <li key={user._id}>
-              {user.name}
+              {user.email}
             </li>
           ))}
         </ul>

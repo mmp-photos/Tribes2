@@ -3,7 +3,7 @@ import React from "react";
 
 const header = () => {
   return (
-    <div className="header">
+    <header>
       <h1>Tribes of Men</h1>
       <nav>
         <ul>
@@ -21,7 +21,7 @@ const header = () => {
           </li> */}
         </ul>
       </nav>
-    </div>
+    </header>
   );
 };
 

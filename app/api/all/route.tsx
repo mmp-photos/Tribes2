@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from "@/app/lib/databasae/connectToDatabase";
 import { UserModel } from "../../models/UserSchema";
+import { findByUser } from "@/app/lib/users/findByEmail";
 
 interface CreateUserInput {
     email: string;
@@ -12,6 +13,11 @@ const MONGODB_URI = process.env.ATLAS_URI;
 
 export async function POST(req: Request) {
 
+    const searchString = {
+        email: 'beard@afcrichmond.com',
+        password: 'password'
+    };
+    
     try {
         if (!mongoose.connection.readyState) {
             console.log("Connecting to MongoDB...");
@@ -28,36 +34,13 @@ export async function POST(req: Request) {
         console.log('Connected to the users database');
         const db = client.db('TribesOfMen');
         const collection = db.collection('users');
-        const allUsers = await collection.find({username: body.username}).toArray();
-
+        // const allUsers = await collection.find({username: body.username}).toArray();
+        const allUsers = await collection.find({email: body.email}).toArray();
+        // const existingUser = await findByUser(searchString);
+        // console.log(`Existing user returned: ${existingUser}`);
+    
         console.log(allUsers);
         return NextResponse.json(allUsers);
-
-
-
-
-
-
-        // Save the user to the database
-        const { email, password, accountStatus, accountType, dateCreated, lastLogin, lastLogout, termsAccepted, termsAcceptedOn, profile } = body;
-
-        const newUser = new UserModel({
-            email: email,
-            password: password,
-            accountStatus: accountStatus,
-            accountType: accountType,
-            dateCreated: body.dateCreated || Date.now(),
-            lastLogin: lastLogin,
-            lastLogout: lastLogout,
-            termsAccepted: termsAccepted,
-            termsAcceptedOn: termsAcceptedOn,
-            profile: profile
-        });
-
-        const savedUser = await newUser.save();
-
-        console.log('New user added:', savedUser);
-        return NextResponse.json(savedUser, { status: 201 });
         
     } catch (error) {
         console.error('Error fetching users:', error);

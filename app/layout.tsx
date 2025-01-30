@@ -15,9 +15,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <div id="flex-wrapper">
         <Header />
-        {children}
+        <main>
+          {children}
+        </main>
         <Footer />
+        </div>
       </body>
     </html>
   );
