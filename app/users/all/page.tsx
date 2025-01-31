@@ -69,7 +69,7 @@ const allUsers: React.FC = () => {
         <ul>
           {data.map((user) => (
             <li key={user._id}>
-              {user.email}
+              {user.name}
             </li>
           ))}
         </ul>
