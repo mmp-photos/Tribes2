@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
-import { Poppins } from 'next/font/google';
+import localFont from 'next/font/local'
 import "./globals.css";
 import Header from "./Header";
 import Footer from "./Footer";
+
+const poppins = localFont({
+  src: [
+    {
+      path: '../fonts/gastromondtest-regular.otf',
+      weight: '400'
+    },
+  ],
+  variable: '--gastromond'
+})
 
 export const metadata: Metadata = {
   title: 'Tribes of Men',

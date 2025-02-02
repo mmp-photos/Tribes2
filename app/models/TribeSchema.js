@@ -1,7 +1,7 @@
 import { Schema, models, model } from "mongoose";
 import bcrypt from "bcrypt";
 
-const styleSchema = new Schema(
+const tribeSchema = new Schema(
   {
     name: {
       type: String,
@@ -63,6 +63,12 @@ const styleSchema = new Schema(
         ref: "Clothing", // Reference to the Clothing collection
       },
     ],
+    outerwear: [
+      {
+        type: Schema.Types.ObjectId, // Array of ObjectId references
+        ref: "Clothing", // Reference to the Clothing collection
+      },
+    ],
     accessories: [
       {
         type: Schema.Types.ObjectId, // Array of ObjectId references
@@ -105,9 +111,12 @@ const styleSchema = new Schema(
     createdBy: {
       type: { type: MyObjectId, ref: 'Users' },
     },
-    updatedBy: {
-      type: { type: MyObjectId, ref: 'Users' },
-    },
+    updatedBy: [
+      {
+        type: { type: MyObjectId, ref: 'Users' },
+        updatedAt: Date
+      }
+    ],
   },
   {
     timestamps: {
@@ -118,6 +127,6 @@ const styleSchema = new Schema(
 );
 
 // Safeguard against model recompilation
-const StyleModel = models.Style || model("style", styleSchema);
+const TribeModel = models.Style || model("tribe", tribeSchema);
 
-export { StyleModel };
+export { TribeModel };

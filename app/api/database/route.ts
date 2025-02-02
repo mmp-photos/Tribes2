@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '../../lib/databasae/connectToDatabase';
+import { connectToDatabase } from '../../lib/databasae/connectUsers';
   
 export async function POST(req: Request) {
     let client = await connectToDatabase();
@@ -43,3 +43,4 @@ export async function POST(req: Request) {
         await client.close();
     }
 }
+

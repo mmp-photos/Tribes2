@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button } from "reactstrap";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as yup from "yup";
-import { connectToDatabase } from "@/app/lib/databasae/connectToDatabase";
+import { connectToDatabase } from "@/app/lib/databasae/connectUsers";
 
 interface User {
   _id: string;
