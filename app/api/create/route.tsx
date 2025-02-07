@@ -1,5 +1,5 @@
 import { insertUser } from '@/app/lib/users/insertUser';
-import { connectToDatabase } from '@/app/lib/databasae/connectUsers';
+import { connectToDatabase } from '@/app/lib/database/connectUsers';
 
 interface InsertUserResult {
     success: boolean;

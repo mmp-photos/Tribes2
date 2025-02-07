@@ -1,5 +1,4 @@
 import { Schema, models, model } from "mongoose";
-import bcrypt from "bcrypt";
 
 const tribeSchema = new Schema(
   {
@@ -13,10 +12,9 @@ const tribeSchema = new Schema(
       type: String,
       required: false,
     },
-    attitude: {
-      type: String,
-      required: false,
-    },
+    
+    attitude: [{ type: String }]
+    ,
     vibe: {
       type: String,
       required: false,

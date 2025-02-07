@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from "@/app/lib/databasae/connectUsers";
+import { connectToDatabase } from "@/app/lib/database/connectUsers";
 
 interface CreateUserInput {
     email: string;

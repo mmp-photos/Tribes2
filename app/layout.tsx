@@ -25,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/cml7lez.css" />
+      </head>
       <body>
         <div id="flex-wrapper">
         <Header />

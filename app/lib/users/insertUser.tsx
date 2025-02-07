@@ -1,6 +1,5 @@
-import { UserModel } from "../../models/UserSchema";
+import { UserModel } from "../database/models/UserSchema";
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from "../databasae/connectUsers";
 
 interface CreateUserInput {
     email: string;

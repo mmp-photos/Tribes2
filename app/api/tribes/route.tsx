@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { withDatabase } from '@/app/lib/databasae/dbHelper';
+import { withDatabase } from '@/app/lib/database/dbHelper';
 
 export async function POST(req: Request) {
     try {
@@ -12,10 +12,9 @@ export async function POST(req: Request) {
 
         const users = await withDatabase(async (collection) => {
             return await collection
-                .find({ username: { $regex: name, $options: 'i' } })
+                .find()
                 .toArray();
         });
-
         return NextResponse.json(users);
     } catch (error) {
         console.error("Database error:", error);
