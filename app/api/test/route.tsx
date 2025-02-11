@@ -9,7 +9,26 @@ export async function POST(req: NextRequest) {
     try {
         await connectUsers(); // Ensure MongoDB is connected
         const body = await req.json();
-        const { email, password } = body; // No need to pass termsAccepted
+        const { 
+            name, 
+            description, 
+            attitude, 
+            vibe, 
+            colorFamily,
+            colors,
+            upperBody,
+            lowerBody,
+            headwer,
+            footwear,
+            outerwear,
+            underwear,
+            accessories,
+            photos,
+            tribesmen,
+            elders,
+            createdBy,
+            udatedBy,
+          } = body; // No need to pass termsAccepted
 
         // Validate required fields
         if (!email || !password) {

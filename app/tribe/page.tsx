@@ -55,48 +55,7 @@ const Tribe: React.FC = () => {
   }
   return (
     <main>
-      {showForm && (
-        <>
-        <h2>Add User</h2>
-        <Formik
-          initialValues={{ email: "", password: "tribe23" }}
-          validationSchema={Yup.object({
-            email: Yup.string().email("Invalid email address").required("Required"),
-          })}
-          onSubmit={(values, { setSubmitting }) => {
-            testUsersAPI(values).finally(() => setSubmitting(false));
-          }}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <div>
-                <label htmlFor="email">Email</label>
-                <Field type="email" name="email" />
-                <ErrorMessage name="email" component="div" className="error" />
-              </div>
-              <button type="submit" disabled={isSubmitting}>Submit</button>
-            </Form>
-          )}
-        </Formik>
-        </>
-      )}
-
-      {resStatus &&
-        <>
-          <h3>An error occurred</h3>
-          <p className="error">{error}</p>
-        </>
-      }
-
-      {data && (
-        <ul>
-          {allUsers.length > 0 ? (
-            allUsers.map((user) => <li key={user.email}>{user.email}</li>)
-          ) : (
-            <p>No users available</p>
-          )}
-        </ul>
-      )}
+      <h2>Tribal Style</h2>
     </main>
   );
 };

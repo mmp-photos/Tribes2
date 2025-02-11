@@ -33,7 +33,7 @@ const profileSchema = new Schema(
     displayName: {
       type: String,
     },
-    photo: {
+    profilePhoto: {
         type: String,
     },
     connections: 

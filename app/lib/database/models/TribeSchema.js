@@ -31,13 +31,13 @@ const tribeSchema = new Schema(
         },
       },
     ],
-    tops: [
+    upperBody: [
       {
         type: Schema.Types.ObjectId, // Array of ObjectId references
         ref: "Clothing", // Reference to the Clothing collection
       },
     ],
-    bottoms: [
+    lowerBody: [
       {
         type: Schema.Types.ObjectId, // Array of ObjectId references
         ref: "Clothing", // Reference to the Clothing collection
@@ -61,7 +61,7 @@ const tribeSchema = new Schema(
         ref: "Clothing", // Reference to the Clothing collection
       },
     ],
-    outerwear: [
+    underwear: [
       {
         type: Schema.Types.ObjectId, // Array of ObjectId references
         ref: "Clothing", // Reference to the Clothing collection
@@ -111,7 +111,7 @@ const tribeSchema = new Schema(
     },
     updatedBy: [
       {
-        type: { type: MyObjectId, ref: 'Users' },
+        type: { type: MyObjectId, ref: 'Profile' },
         updatedAt: Date
       }
     ],
