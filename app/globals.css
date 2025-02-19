@@ -109,3 +109,44 @@
     font-size: 1rem;
     color: var(--white);
   }
+  li.color-swatch{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    list-style-type: none;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: var(--mid-secondary);
+    border-width: 3px;
+    filter: drop-shadow(3px 3px 4px var(--mid-secondary));
+    width: 50px;
+    height: 50px;
+    margin: 5px;
+    text-align: center;
+    color: var(--white);
+    font-size: 2rem;
+    font-weight: 400;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  li.hovered{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    list-style-type: none;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: var(--mid-tertiary);
+    border-width: 3px;
+    filter: drop-shadow(2px 2px 2px var(--mid-secondary));
+    width: 50px;
+    height: 50px;
+    margin: 5px;
+    cursor: pointer;
+  }
+
+  ul.colors{
+    display: flex;
+    justify-content: center;
+  }
