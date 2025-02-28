@@ -8,11 +8,12 @@ export async function GET(req: NextRequest) {
         await connectUsers(); // Ensure database connection
         
         const { searchParams } = new URL(req.url);
-        const ids = searchParams.getAll("ids"); // Extract `ids` query parameter
+        const ids = searchParams.getAll("ids");
+        console.log(`the content of ids is: ${ids} and it has a length of ${ids.length}`)
 
-        if (!ids || ids.length === 0) {
-            return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
-        }
+        // if (!ids || ids.length === 0) {
+        //     return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
+        // }
 
         // Ensure all IDs are valid MongoDB ObjectId
         const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));

@@ -1,8 +1,11 @@
+"use client";
+import React, { useState } from "react";
 import type { Metadata } from "next";
 import localFont from 'next/font/local'
 import "./globals.css";
 import Header from "./Header";
 import Footer from "./Footer";
+import { AuthProvider } from "./context/AuthContext";
 
 const poppins = localFont({
   src: [
@@ -24,6 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <AuthProvider>
     <html lang="en">
       <head>
         <link rel="stylesheet" href="https://use.typekit.net/cml7lez.css" />
@@ -38,5 +42,6 @@ export default function RootLayout({
         </div>
       </body>
     </html>
+    </AuthProvider>
   );
 }

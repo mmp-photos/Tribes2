@@ -4,17 +4,18 @@ import { Color, ColorId } from "../types/color";
 export const AllColors: React.FC = () => {
 
     const [data, setData] = useState<Color[]>([]);
+    const [colorDetails, setColorDetails] = useState<Color[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [resStatus, setResStatus] = useState<string | null>(null);
 
-    const findColors: ColorId[] = ["67ae3b52555185e068e51f3f", "67ae3a0a555185e068e51f3b"];
+    const findColors: ColorId[] = [];
 
     const queryString = findColors.map((color) => `ids=${encodeURIComponent(color.toString())}`).join("&");
 
     const getAllColors = async (findColors: ColorId[]) => {
     
         try {
-            const res = await fetch(`/api/test?${queryString}`, {
+            const res = await fetch(`/api/colors?${queryString}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -35,6 +36,12 @@ export const AllColors: React.FC = () => {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
+
+            if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
+
+            const result = await res.json();
+            console.log(result);
+            setColorDetails(result.colors || []);
         }
         catch (err: any) {
             setError("There was an error fetching the colors.");
@@ -57,7 +64,7 @@ export const AllColors: React.FC = () => {
         <>
             <h2>All Colors</h2>
             {data ? (
-                <ul className="colors">
+                <ul className="colors show" id="allColors">
                     <li className="color-swatch" style={{ backgroundColor: "var(--background-primary)" }}>+</li>
                     {data.map((color) => (
                         <li
@@ -73,6 +80,16 @@ export const AllColors: React.FC = () => {
             ) : (
                 <p>Loading colors...</p>
             )}
+            {colorDetails ? (
+                <ul className="color-details">
+                    {colorDetails.map((color) => (
+                        <li key={color._id.toString()}><h2 style={{color: `#${color.colorValue}`}}>{color.colorName}</h2><br/>
+                        {color.colorValue}
+                        </li>
+                    ))}
+                </ul>
+            ) : 
+                null
+            }
         </>
-    );
-};
+)};

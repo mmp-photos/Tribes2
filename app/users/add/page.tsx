@@ -28,7 +28,7 @@ const Tribe: React.FC = () => {
 
   const testUsersAPI = async (values: User) => {
     try {
-      const res = await fetch("/api/test", {
+      const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
