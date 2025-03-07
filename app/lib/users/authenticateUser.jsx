@@ -1,18 +1,16 @@
 import bcrypt from 'bcrypt';
 import { UserModel } from "@/app/lib/database/models/UserSchema";
 
-const login = async (email, password) => {
-    try {
-        const hash = await bcrypt.hash(password, 13);
+export const login = async (email, password) => {
+    try {        
         const existingUser = await UserModel.findOne({ email: email });
-        const isMatch = await bcrypt.compare("pass", hash);
-
-        if (existingUser) {
-            return true;
-        }
-        else{
-            console.log(`No user was found.`)
-        }
+        const hash = await bcrypt.hash(password, 13);
+        // console.log(`Found an existingUser: ${existingUser}`);
+        // console.log(`The password passed to the function is ${password}`);
+        // console.log(`The password found in the database ${existingUser.password}`);
+        const isMatch = await bcrypt.compare(password, hash);
+        console.log(`isMatch: ${isMatch}`)
+        return isMatch;
 
     } catch (error) {
         console.error("Error inserting user:", error);
@@ -24,6 +22,4 @@ const login = async (email, password) => {
             return { success: false, error: "An unknown error occurred" };
         }
     }
-}
-
-export default login;
+};

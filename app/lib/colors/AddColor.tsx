@@ -15,7 +15,7 @@ interface AllColorsProps {
     setError: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export const AddColor: React.FC = () => {
+const AddColor: React.FC = () => {
   const [data, setData] = useState<Color[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [resStatus, setResStatus] = useState<string | null>(null);

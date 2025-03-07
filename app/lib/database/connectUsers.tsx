@@ -16,7 +16,6 @@ export async function connectUsers() {
 
         await mongoose.connect(MONGODB_URI, {
             dbName: "TribesOfMen",
-            useNewUrlParser: true,
             useUnifiedTopology: true,
         } as mongoose.ConnectOptions);
 

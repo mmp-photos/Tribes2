@@ -1,7 +1,8 @@
+"use client"
 import React, { useState, useEffect } from "react";
 import { Color, ColorId } from "../types/color";
 
-export const AllColors: React.FC = () => {
+const AllColors: React.FC = () => {
 
     const [data, setData] = useState<Color[]>([]);
     const [colorDetails, setColorDetails] = useState<Color[]>([]);
@@ -93,3 +94,5 @@ export const AllColors: React.FC = () => {
             }
         </>
 )};
+
+export default AllColors

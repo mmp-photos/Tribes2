@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { set } from "mongoose";
@@ -19,12 +20,21 @@ interface ReturnedUser {
   termsAcceptedOn: Date
   updatedAt: Date;
 }
-const Tribe: React.FC = () => {
+
+const AddUser: React.FC = () => {
+  
   const [data, setData] = useState<User[] | null>(null);
   const [allUsers, setAllUsers] = useState<ReturnedUser[] | null>(null);
   const [showForm, setShowForm] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [resStatus, setResStatus] = useState<number | null>(null);
+
+  const { setPageTitle } = useAuth(); 
+
+  useEffect(() => {
+    setPageTitle("Add a User");
+  }, [setPageTitle]);
+
 
   const testUsersAPI = async (values: User) => {
     try {
@@ -101,4 +111,4 @@ const Tribe: React.FC = () => {
   );
 };
 
-export default Tribe;
+export default AddUser;

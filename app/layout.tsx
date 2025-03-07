@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
-import type { Metadata } from "next";
-import localFont from 'next/font/local'
+import React from "react";
+import localFont from 'next/font/local';
 import "./globals.css";
 import Header from "./Header";
 import Footer from "./Footer";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import CookieConsent from "react-cookie-consent";
+import Head from "next/head"; // Import Next.js <Head> component
 
 const poppins = localFont({
   src: [
@@ -15,11 +16,7 @@ const poppins = localFont({
     },
   ],
   variable: '--gastromond'
-})
-
-export const metadata: Metadata = {
-  title: 'Tribes of Men',
-};
+});
 
 export default function RootLayout({
   children,
@@ -27,21 +24,48 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <html>
     <AuthProvider>
-    <html lang="en">
-      <head>
-        <link rel="stylesheet" href="https://use.typekit.net/cml7lez.css" />
-      </head>
-      <body>
-        <div id="flex-wrapper">
-        <Header />
-        <main>
-          {children}
-        </main>
-        <Footer />
-        </div>
-      </body>
-    </html>
+    <body>
+      <HeadContent />
+      <LayoutContent>{children}</LayoutContent>
+      <CookieConsent
+        location="bottom"
+        buttonText="Accept"
+        declineButtonText="Decline"
+        enableDeclineButton
+        onAccept={() => console.log("Cookies accepted")}
+        onDecline={() => console.log("Cookies declined")}
+        style={{ background: "#c363d0", color: "#fff" }}
+        buttonStyle={{ background: "#3b688c", color: "#fff", fontSize: "14px" }}
+        declineButtonStyle={{ background: "#893553", color: "#fff", fontSize: "14px" }}
+      >
+        This site uses cookies.
+      </CookieConsent>
+    </body>
     </AuthProvider>
+    </html>
+  );
+}
+
+// ✅ Use Next.js <Head> inside this component, within AuthProvider
+function HeadContent() {
+  const { pageTitle } = useAuth();
+
+  return (
+    <Head>
+      <title>{pageTitle}</title>
+      <link rel="stylesheet" href="https://use.typekit.net/cml7lez.css" />
+    </Head>
+  );
+}
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  return (
+    <div id="flex-wrapper">
+      <Header />
+      <main>{children}</main>
+      <Footer />
+    </div>
   );
 }

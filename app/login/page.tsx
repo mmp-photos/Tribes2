@@ -4,38 +4,38 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { set } from "mongoose";
 import { User, ReturnedUser } from "../lib/types/users";
-
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
+  const { user, token } = useAuth();
+
+  const authenticateUser = async (values: User) => {
+      try {
+          const res = await fetch("/api/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(values),
+              credentials: "include",
+          });
+  
+          if (!res.ok) throw new Error("Failed to log in");
+  
+          console.log("Login successful");
+  
+          // Force a page refresh so AuthContext picks up the new token
+          window.location.reload();
+      } catch (err) {
+          console.error("Login error:", err);
+      }
+  };
+
+  console.log("User from context:", user);  // Debugging: check if user is available
+  console.log("User from context:", token);  // Debugging: check if user is available
 
   const [data, setData] = useState<User[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resStatus, setResStatus] = useState<number | null>(null);
   
-  const authenticateUser = async (values: User) =>{
-    console.log(values.password);
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
-      const status = res.status;
-      setResStatus(status);
-      if (!res.ok) {
-        throw new Error(`Failed to send request. Status: ${res.status}`);
-      }
-
-      const result = await res.json();
-      console.log(result.users)
-      setData(result);
-      console.log(data);
-    } catch (err: any) {
-        setError('A user with that email already exists')
-    }
-  };
-
   return (
     <main className="flex items-center justify-center md:h-screen">
       <h2>Login</h2>
