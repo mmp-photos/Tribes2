@@ -5,7 +5,6 @@ export interface AuthContextType {
     user: User | null;
     token: string | null;
     loading: boolean;
-    logout: () => void;
     pageTitle: string;
     setPageTitle: (title: string) => void;
 }

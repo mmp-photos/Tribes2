@@ -33,7 +33,7 @@ const AllColors: React.FC = () => {
 
     const editColor = async (colorId: string) => {
         try{
-            const res = await fetch(`/api/test?ids=${encodeURIComponent(colorId)}`, {
+            const res = await fetch(`/api/colors?ids=${encodeURIComponent(colorId)}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });

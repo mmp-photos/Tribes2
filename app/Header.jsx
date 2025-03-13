@@ -1,7 +1,19 @@
 import Link from "next/link";
 import React from "react";
+import { useState } from "react";
+import LogoutButton from "./lib/buttons/Logout";
+import { useAuth } from "./context/AuthContext";
 
 const header = () => {
+  
+  const { user, token } = useAuth();
+  console.log(user);
+  
+  // const [ loggedIN, setLoggedIn ] = useState(false);
+  // if(user.profileID != null){
+  //   setLoggedIn(true);
+  // }
+
   return (
     <header>
       <h1>Tribes of Men</h1>
@@ -21,6 +33,11 @@ const header = () => {
           </li> */}
         </ul>
       </nav>
+      {user?.profileId && (
+  <LogoutButton>
+    Logout
+  </LogoutButton>
+)}
     </header>
   );
 };

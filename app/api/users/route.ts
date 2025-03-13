@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectUsers } from "@/app/lib/database/connectUsers";
+import connectUsers from "@/app/lib/database/connectUsers";
 import mongoose, { Schema, model, models } from "mongoose";
 import { UserModel } from "@/app/lib/database/models/UserSchema";
 import { TermsModel } from "@/app/lib/database/models/TermsSchema";

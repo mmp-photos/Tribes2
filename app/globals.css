@@ -34,6 +34,7 @@
     justify-content: flex-start;
   }
   header{
+    display: flex;
     background-color: var(--white);
     min-height: 5rem;
     max-height: 15rem;
@@ -55,6 +56,15 @@
   .remove-all-margin-padding{
     margin:0 !important;
     padding:0 !important;
+  }
+  #log-out-button{
+    margin-right: 2px;
+    margin-left: auto;
+    background-color: var(--background-primary);
+    font-family: gastromond, serif;
+    color: var(--white);
+    height: 2.75rem;
+    width: 9rem;
   }
 
   /* ID TAGS */

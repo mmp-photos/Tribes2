@@ -18,30 +18,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedToken = getCookie("access_token") as string | undefined;
-        console.log("Token from cookie:", storedToken);  // Debugging
+        console.log("AuthContext: Attempting to get access_token cookie...");
+        const storedToken = getCookie("access_token");
+        console.log("AuthContext: access_token cookie value:", storedToken);
     
-        if (storedToken) {
-            try {
-                setToken(storedToken);
-                const decodedUser = decodeJWT(storedToken);
-                console.log("Decoded user:", decodedUser); // Debugging
-                setUser(decodedUser?.user ?? null); // Ensure correct user structure
-            } catch (error) {
-                console.error("Error decoding token:", error);
-            }
+        if (!storedToken || typeof storedToken !== "string" || storedToken.trim() === "") {
+            console.warn("AuthContext: No valid access_token found in cookies.");
+            setUser(null);
+            setToken(null);
+            setLoading(false);
+            return;
         }
+    
+        try {
+            const decodedUser = decodeJWT(storedToken);
+            console.log("AuthContext: Decoded user:", decodedUser);
+            if (decodedUser && decodedUser.user) {
+                setUser(decodedUser.user);
+                setToken(storedToken);
+            } else {
+                console.warn("AuthContext: Invalid JWT or user data.");
+                setUser(null);
+                setToken(null);
+            }
+        } catch (error) {
+            console.error("AuthContext: Error decoding token:", error);
+            setUser(null);
+            setToken(null);
+        }
+    
+        console.log("AuthContext: User state:", user);
+        console.log("AuthContext: Token state:", token);
         setLoading(false);
-    }, []);  
-
-    const logout = () => {
-        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        setToken(null); // Clear token on logout
-        setUser(null);
-    };
-
+    }, []);
+        
     return (
-        <AuthContext.Provider value={{ user, token, loading, logout, pageTitle, setPageTitle }}>
+        <AuthContext.Provider value={{ user, token, loading, pageTitle, setPageTitle }}>
             {children}
         </AuthContext.Provider>
     );

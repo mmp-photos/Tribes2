@@ -4,22 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { set } from "mongoose";
-
-interface User {
-  email: string;
-  password: string;
-}
-
-interface ReturnedUser {
-  accountStatus: string;
-  accountType: string;
-  createdAt: Date;
-  email: string;
-  password: string;
-  termsAccepted: string,
-  termsAcceptedOn: Date
-  updatedAt: Date;
-}
+import { User, ReturnedUser } from "../../lib/types/users";
 
 const AddUser: React.FC = () => {
   
@@ -69,7 +54,7 @@ const AddUser: React.FC = () => {
         <>
         <h2>Add User</h2>
         <Formik
-          initialValues={{ email: "", password: "tribe23" }}
+          initialValues={{ email: "", password: "" }}
           validationSchema={Yup.object({
             email: Yup.string().email("Invalid email address").required("Required"),
           })}
@@ -84,6 +69,11 @@ const AddUser: React.FC = () => {
                 <Field type="email" name="email" />
                 <ErrorMessage name="email" component="div" className="error" />
               </div>
+              <div>
+                <label htmlFor="password">Password</label>
+                <Field type="password" name="password" />
+                <ErrorMessage name="password" component="div" className="error" />
+            </div>
               <button type="submit" disabled={isSubmitting}>Submit</button>
             </Form>
           )}
@@ -98,15 +88,13 @@ const AddUser: React.FC = () => {
         </>
       }
 
-      {data && (
-        <ul>
-          {allUsers.length > 0 ? (
-            allUsers.map((user) => <li key={user.email}>{user.email}</li>)
-          ) : (
-            <p>No users available</p>
-          )}
-        </ul>
-      )}
+  {data && allUsers ? (
+    allUsers.length > 0 ? (
+      allUsers.map((user) => <li key={user.email}>{user.email}</li>)
+    ) : (
+      <p>No users available</p>
+    )
+  ) : null}
     </main>
   );
 };

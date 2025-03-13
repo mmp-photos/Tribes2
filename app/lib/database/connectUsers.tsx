@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 
 const MONGODB_URI: string = process.env.ATLAS_URI ?? "";
 
@@ -7,22 +7,31 @@ if (!MONGODB_URI) {
 }
 
 // Mongoose connection function
-export async function connectUsers() {
+export default async function connectUsers() {
     try {
         if (mongoose.connection.readyState >= 1) {
             console.log("Already connected to MongoDB");
             return mongoose.connection;
         }
 
-        await mongoose.connect(MONGODB_URI, {
+        const options: ConnectOptions = {
             dbName: "TribesOfMen",
-            useUnifiedTopology: true,
-        } as mongoose.ConnectOptions);
+            //useUnifiedTopology: true, // No longer needed
+            //useNewUrlParser: true, // No longer needed
+            //bufferCommands: false, // Prevents buffering of commands when not connected
+        };
+
+        await mongoose.connect(MONGODB_URI, options);
 
         console.log("Connected to MongoDB via Mongoose");
         return mongoose.connection;
     } catch (error) {
-        console.error("Error connecting to MongoDB:", error);
+        if (error instanceof Error) {
+            console.error("Error connecting to MongoDB:", error.message);
+        } else {
+            console.error("Error connecting to MongoDB:", error);
+        }
+
         throw new Error("Failed to connect to MongoDB");
     }
 }

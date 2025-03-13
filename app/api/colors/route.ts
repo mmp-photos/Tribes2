@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectUsers } from "@/app/lib/database/connectUsers";
+import connectUsers from "../../lib/database/connectUsers"
 import { ColorModel } from "@/app/lib/database/models/ColorSchema";
 import mongoose from "mongoose";
 
