@@ -5,6 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { set } from "mongoose";
 import { Color } from "../types/color";
+import { useAuth } from "../../context/AuthContext";
 
 interface AllColorsProps {
     initialLoad: boolean;

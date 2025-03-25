@@ -4,6 +4,7 @@ export interface User {
     _id?: string | ObjectId;  // Make _id optional
     email: string;
     password: string;
+    profileId: string | ObjectId;  // Make _id optional;
 }
   
 export interface ReturnedUser {
@@ -13,8 +14,10 @@ export interface ReturnedUser {
     createdAt: Date;
     email: string;
     password: string;
+    dob: Date;
     termsAccepted: string,
-    termsAcceptedOn: Date
+    termsAcceptedOn: Date;
     updatedAt: Date;
+    profileId: string | ObjectId;  // Make _id optional;
 }
 

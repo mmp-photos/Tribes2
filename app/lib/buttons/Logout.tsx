@@ -1,24 +1,24 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { destroyCookie } from "nookies";
+import { useAuth } from "../../context/AuthContext";
 
-export default function LogoutButton() {
-  const router = useRouter(); // Initialize the router
+export default function AuthButton() {
+  const router = useRouter();
+  const { isLoggedIn, setIsLoggedIn, logout } = useAuth(); // Destructure logout
+  // console.log(user);
 
-  const logout = () => {
-    destroyCookie(null, "access_token"); // Delete the authentication cookie
-    localStorage.removeItem("rcc_cookie_consent"); // Reset Cookie Consent
-    router.push("/login"); // Redirect to login page
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      setIsLoggedIn(false);
+      logout(); // Call the logout function from AuthContext
+    } else {
+      router.push("/login");
+    }
   };
 
   return (
-    <button 
-      onClick={() => {
-        logout();
-      }}
-      id="log-out-button"
-    >
-      Logout
+    <button onClick={handleAuthAction} id="log-out-button">
+      {isLoggedIn ? "Logout" : "Login"}
     </button>
   );
-} 
+}

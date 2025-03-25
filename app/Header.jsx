@@ -5,10 +5,7 @@ import LogoutButton from "./lib/buttons/Logout";
 import { useAuth } from "./context/AuthContext";
 
 const header = () => {
-  
-  const { user, token } = useAuth();
-  console.log(user);
-  
+    
   // const [ loggedIN, setLoggedIn ] = useState(false);
   // if(user.profileID != null){
   //   setLoggedIn(true);
@@ -33,11 +30,7 @@ const header = () => {
           </li> */}
         </ul>
       </nav>
-      {user?.profileId && (
-  <LogoutButton>
-    Logout
-  </LogoutButton>
-)}
+      <LogoutButton />
     </header>
   );
 };

@@ -142,6 +142,30 @@
     justify-content: center;
     cursor: pointer;
   }
+  li.color-swatch-small{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    list-style-type: none;
+    border-style: solid;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    text-align: center;
+    color: var(--white);
+    font-size: 2rem;
+    font-weight: 400;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .swatch-selected{
+    border-color: var(--mid-secondary);
+    border-width: 3px;
+  }
+
+  .w-md-editor-content{
+    background-color: var(--background-secondary);
+  }
 
   li.hovered{
     display: flex;

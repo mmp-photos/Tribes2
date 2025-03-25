@@ -7,15 +7,18 @@ import { User, ReturnedUser } from "../lib/types/users";
 import * as Yup from "yup";
 
 export default function LoginPage() {
-  const { user, token } = useAuth();
-
+    const { user } = useAuth();
     const [data, setData] = useState<User[] | null>(null);
     const [allUsers, setAllUsers] = useState<ReturnedUser[] | null>(null);
     const [showForm, setShowForm] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [resStatus, setResStatus] = useState<number | null>(null);
 
-    const { setPageTitle } = useAuth(); 
+    const { setPageTitle, isAdmin } = useAuth();
+
+    useEffect(() => {
+        console.log(`isAdmin status is ${isAdmin}`)
+    }, [isAdmin]);
   
     const handleLogin = async (email: string, password: string) => {
         try {
