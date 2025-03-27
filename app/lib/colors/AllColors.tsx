@@ -4,7 +4,6 @@ import { Color, ColorId } from "../types/color";
 import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import * as Yup from "yup";
-import MDEditor from "@uiw/react-md-editor";
 
 const AllColors: React.FC = () => {
     const [data, setData] = useState<Color[]>([]);
@@ -12,7 +11,12 @@ const AllColors: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [resStatus, setResStatus] = useState<string | null>(null);
     const [showBlankForm, setShowBlankForm] = useState<boolean>(false);
-    const formikRef = useRef<FormikProps<{ colorName: string; colorValue: string; complementaryColors: string[]; contrastingColors: string[]; colorDescription: string }>>(null);
+    const formikRef = useRef<FormikProps<{
+        colorName: string;
+        colorValue: string;
+        complementaryColors: string[];
+        contrastingColors: string[]; // Added to FormikProps
+    }>>(null);
 
     const placeHolder = () => {
         console.log(`Click the button`);
@@ -67,21 +71,36 @@ const AllColors: React.FC = () => {
         e.currentTarget.classList.remove("hovered");
     };
 
-    const handleComplementaryColorClick = (colorId: string, colorsArray: string[], colorsArrayName: 'complementaryColors' | 'contrastingColors') => {
-        if (formikRef.current) { // Add this check
-            const currentColors = formikRef.current.values[colorsArrayName] || [];
-            const isSelected = currentColors.includes(colorId);
-            const updatedColors = isSelected
-                ? currentColors.filter((id) => id !== colorId)
-                : [...currentColors, colorId];
-    
-            formikRef.current.setValues({
-                ...formikRef.current.values,
-                [colorsArrayName]: updatedColors,
-            });
+    const handleComplementaryColorClick = (colorId: string) => {
+        if (formikRef.current) {
+            const currentComplementaryColors = formikRef.current.values.complementaryColors || [];
+            const isSelected = currentComplementaryColors.includes(colorId);
+
+            const updatedComplementaryColors = isSelected
+                ? currentComplementaryColors.filter((id) => id !== colorId)
+                : [...currentComplementaryColors, colorId];
+
+            formikRef.current.setFieldValue('complementaryColors', updatedComplementaryColors);
         }
     };
-    
+
+      const handleContrastingColorClick = (colorId: string) => {
+        if (formikRef.current) {
+            const currentContrastingColors = formikRef.current.values.contrastingColors || [];
+            const isSelected = currentContrastingColors.includes(colorId);
+
+            const updatedContrastingColors = isSelected
+                ? currentContrastingColors.filter((id) => id !== colorId)
+                : [...currentContrastingColors, colorId];
+
+            formikRef.current.setFieldValue('contrastingColors', updatedContrastingColors);
+        }
+    };
+
+    const selectedClass = (colorId: string, colorsArray: string[]) => {
+        return colorsArray.includes(colorId) ? "swatch-selected" : "";
+    };
+
     useEffect(() => {
         getAllColors(findColors);
     }, []);
@@ -92,26 +111,10 @@ const AllColors: React.FC = () => {
                 colorName: colorDetails.colorName || "",
                 colorValue: colorDetails.colorValue || "",
                 complementaryColors: colorDetails.complementaryColors?.map(String) || [],
-                contrastingColors: colorDetails.contrastingColors?.map(String) || [],
-                colorDescription: colorDetails.colorDescription || "",
+                contrastingColors: colorDetails.contrastingColors?.map(String) || [], // Added contrastingColors
             });
         }
     }, [colorDetails]);
-
-    const MDEditorField = ({ field, form }: any) => (
-        <MDEditor
-            value={field.value}
-            onChange={(value?: string | undefined) => {
-                if (value !== undefined) {
-                    form.setFieldValue(field.name, value);
-                }
-            }}
-        />
-    );
-
-    const selectedClass = (colorId: string, colorsArray: string[]) => {
-        return colorsArray.includes(colorId) ? "swatch-selected" : "";
-    };
 
     return (
         <>
@@ -148,8 +151,7 @@ const AllColors: React.FC = () => {
                         colorName: colorDetails?.colorName || "",
                         colorValue: colorDetails?.colorValue || "",
                         complementaryColors: colorDetails?.complementaryColors?.map(String) || [],
-                        contrastingColors: colorDetails?.contrastingColors?.map(String) || [],
-                        colorDescription: colorDetails?.colorDescription || "",
+                        contrastingColors: colorDetails?.contrastingColors?.map(String) || []
                     }}
                     validationSchema={Yup.object({
                         colorName: Yup.string().required("Color name is required"),
@@ -172,34 +174,35 @@ const AllColors: React.FC = () => {
                                 <ErrorMessage name="colorValue" component="div" className="colorValue" />
                             </div>
                             <div>
-                                <label htmlFor="colorDescription">Color Description</label>
-                                <Field name="colorDescription" component={MDEditorField} />
-                                <ErrorMessage name="colorDescription" component="div" className="colorDescription" />
-                            </div>
-                            <div>
                                 <label htmlFor="complementaryColors">Complementary Colors</label>
                                 <ul className="colors show" id="complementaryColors">
-                                    {data.map((color) => (
-                                        <li
-                                            key={color._id.toString()}
-                                            className={`color-swatch-small ${selectedClass(color._id.toString(), values.complementaryColors)}`}
-                                            style={{ backgroundColor: `#${color.colorValue}` }}
-                                            onClick={() => handleComplementaryColorClick(color._id.toString(), values.complementaryColors, 'complementaryColors')}
-                                        ></li>
-                                    ))}
+                                    {data.map((color) => {
+                                        const isSelected = values.complementaryColors.includes(color._id.toString());
+                                        return (
+                                            <li
+                                                key={color._id.toString()}
+                                                className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
+                                                style={{ backgroundColor: `#${color.colorValue}` }}
+                                                onClick={() => handleComplementaryColorClick(color._id.toString())}
+                                            ></li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                             <div>
                                 <label htmlFor="contrastingColors">Contrasting Colors</label>
                                 <ul className="colors show" id="contrastingColors">
-                                    {data.map((color) => (
-                                        <li
-                                            key={color._id.toString()}
-                                            className={`color-swatch-small ${selectedClass(color._id.toString(), values.contrastingColors)}`}
-                                            style={{ backgroundColor: `#${color.colorValue}` }}
-                                            onClick={() => handleComplementaryColorClick(color._id.toString(), values.contrastingColors, 'contrastingColors')}
-                                        ></li>
-                                    ))}
+                                    {data.map((color) => {
+                                         const isSelected = values.contrastingColors.includes(color._id.toString());
+                                        return (
+                                            <li
+                                                key={color._id.toString()}
+                                                className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
+                                                style={{ backgroundColor: `#${color.colorValue}` }}
+                                                onClick={() => handleContrastingColorClick(color._id.toString())}
+                                            ></li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                             <button type="submit" disabled={isSubmitting}>Submit</button>

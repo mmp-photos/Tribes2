@@ -8,6 +8,7 @@ export interface AuthContextType {
     isAdmin: boolean;
     isLoggedIn: boolean;
     pageTitle: string;
+    profileId: string | null;
     setPageTitle: (title: string) => void;
     setIsLoggedIn: (isLoggedIn: boolean) => void;
     logout: () => void;

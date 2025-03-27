@@ -24,7 +24,12 @@ const colorSchema = new Schema(
     contrastingColors:
         [{ type: mongoose.Schema.Types.ObjectId, ref: "Color" }]
     ,
-    status:{
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+      required: true,
+    },
+      status:{
         type: String,
         required: true,
         default: "ok",

@@ -16,6 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [pageTitle, setPageTitle] = useState("Tribes of Men"); // Default title
     const [user, setUser] = useState<User | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [profileId, setProfileId] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState<string | null>(null); // Add token state
     const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 } else {
                     setIsAdmin(false);
                 }
+                setProfileId(decodedUser.user.profile._id);
             } else {
                 console.warn("AuthContext: Invalid JWT or user data.");
                 setUser(null);
@@ -76,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
         
     return (
-        <AuthContext.Provider value={{ user, token, loading, pageTitle, isAdmin, isLoggedIn, logout, setPageTitle, setIsLoggedIn }}>
+        <AuthContext.Provider value={{ user, token, loading, pageTitle, isAdmin, isLoggedIn, profileId, logout, setPageTitle, setIsLoggedIn }}>
             {children}
         </AuthContext.Provider>
     );

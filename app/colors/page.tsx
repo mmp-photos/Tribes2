@@ -13,7 +13,7 @@ const Colors = () => {
   return (
     <main>
         <AllColors />
-        <AddColor />
+        {/* <AddColor /> */}
     </main>
   );
 };
