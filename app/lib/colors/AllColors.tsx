@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import * as Yup from "yup";
 import MDEditor from "@uiw/react-md-editor"; // Import MDEditor
+//import  { EditorRenderHTML }  from "@uiw/react-md-editor"; //  removed EditorRenderHTML from here
 
 
 const AllColors: React.FC = () => {
@@ -17,7 +18,7 @@ const AllColors: React.FC = () => {
         colorName: string;
         colorValue: string;
         complementaryColors: string[];
-        contrastingColors: string[]; // Added to FormikProps
+        contrastingColors: string[];
     }>>(null);
 
     const placeHolder = () => {
@@ -86,7 +87,7 @@ const AllColors: React.FC = () => {
         }
     };
 
-      const handleContrastingColorClick = (colorId: string) => {
+    const handleContrastingColorClick = (colorId: string) => {
         if (formikRef.current) {
             const currentContrastingColors = formikRef.current.values.contrastingColors || [];
             const isSelected = currentContrastingColors.includes(colorId);
@@ -108,32 +109,33 @@ const AllColors: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (colorDetails && formikRef.current) {
+        if (colorDetails && formikRef.current && isAdmin) {
             formikRef.current.setValues({
                 colorName: colorDetails.colorName || "",
                 colorValue: colorDetails.colorValue || "",
                 complementaryColors: colorDetails.complementaryColors?.map(String) || [],
-                contrastingColors: colorDetails.contrastingColors?.map(String) || [], // Added contrastingColors
+                contrastingColors: colorDetails.contrastingColors?.map(String) || [],
             });
         }
-    }, [colorDetails]);
+    }, [colorDetails, isAdmin]);
 
     const MDEditorField = ({ field, form }: any) => (
         <MDEditor
             value={field.value}
-            onChange={(value?: string) => { // Change value type to string | undefined
+            onChange={(value?: string) => {
                 if (value !== undefined) {
                     form.setFieldValue(field.name, value);
                 }
             }}
         />
     );
-    
+
     return (
         <>
             <h2>All Colors</h2>
             {data ? (
                 <ul className="colors show" id="allColors">
+                    {isAdmin && (
                         <li
                             className="color-swatch"
                             style={{ backgroundColor: "var(--background-primary)" }}
@@ -141,13 +143,14 @@ const AllColors: React.FC = () => {
                         >
                             +
                         </li>
+                    )}
                     {data.map((color) => (
                         <li
                             className="color-swatch"
                             onMouseOver={colorMouseOver}
                             onMouseOut={colorMouseOut}
                             onClick={() => editColor(color._id.toString())}
-                            key={color._id.toString()}
+                            key={color._id?.toString()} // Added toString() here
                             style={{ backgroundColor: `#${color.colorValue}` }}
                         ></li>
                     ))}
@@ -162,8 +165,9 @@ const AllColors: React.FC = () => {
                         initialValues={{
                             colorName: colorDetails?.colorName || "",
                             colorValue: colorDetails?.colorValue || "",
+                            profileId: profileId || "",
                             complementaryColors: colorDetails?.complementaryColors?.map(String) || [],
-                            contrastingColors: colorDetails?.contrastingColors?.map(String) || []
+                            contrastingColors: [],
                         }}
                         validationSchema={Yup.object({
                             colorName: Yup.string().required("Color name is required"),
@@ -185,10 +189,12 @@ const AllColors: React.FC = () => {
                                     <Field type="text" name="colorValue" />
                                     <ErrorMessage name="colorValue" component="div" className="colorValue" />
                                 </div>
-                                <div>
-                                    <label htmlFor="colorDescription">Color Description</label>
+                                 <div>
+                                    <label htmlFor="colorDescription">
+                                        Color Description
+                                    </label>
                                     <Field name="colorDescription" component={MDEditorField} />
-                                    <ErrorMessage name="colorDescription" component="div" className="colorDescription" />
+                                    <ErrorMessage name="colorDescription" component="div" />
                                 </div>
                                 <div>
                                     <label htmlFor="complementaryColors">Complementary Colors</label>
@@ -228,7 +234,52 @@ const AllColors: React.FC = () => {
                     </Formik>
                 )
             ) : (
-                <p>Sign in as an Administrator</p>
+                colorDetails ? (
+                    <div className="color-details">
+                        <h3 style={{ color: `#${colorDetails.colorValue}` }}>{colorDetails.colorName}</h3>
+                        <p>Color Value: #{colorDetails.colorValue}</p>
+                        <div>
+                            <h4>Description:</h4>
+                           <MDEditor.Markdown  source={colorDetails.colorDescription} />  {/* Render Markdown */}
+                        </div>
+                        {colorDetails.complementaryColors && colorDetails.complementaryColors.length > 0 && (
+                            <div>
+                                 <h4>Complementary Colors</h4>
+                                 <ul>
+                                 {colorDetails.complementaryColors?.map((colorId) => {
+                                    const complementaryColor = data.find(c => c._id?.toString() === colorId.toString());
+                                    return complementaryColor ? (
+                                            <li
+                                                key={complementaryColor._id.toString()} // Ensure unique and non-null key
+                                                style={{ backgroundColor: `#${complementaryColor.colorValue}` }}
+                                            >
+                                            </li>
+                                        ) : null;
+                                    })}
+                                 </ul>
+                             </div>
+                         )}
+                         {colorDetails.contrastingColors && colorDetails.contrastingColors.length > 0 && (
+                             <div>
+                                 <h4>Contrasting Colors</h4>
+                                 <ul>
+                                     {colorDetails.contrastingColors.map(colorId => {
+                                         const contrastingColor = data.find(c => c._id?.toString() === colorId.toString());
+                                         return contrastingColor ? (
+                                            <li
+                                                key={colorId.toString()} // Convert ObjectId to string
+                                                style={{ backgroundColor: `#${contrastingColor.colorValue}` }}
+                                            >
+                                            </li>
+                                         ) : null
+                                     })}
+                                 </ul>
+                             </div>
+                         )}
+                    </div>
+                ) : (
+                    <p>Sign in as an Administrator</p>
+                )
             )}
         </>
     );
