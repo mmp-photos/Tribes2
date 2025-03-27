@@ -4,6 +4,8 @@ import { Color, ColorId } from "../types/color";
 import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import * as Yup from "yup";
+import MDEditor from "@uiw/react-md-editor"; // Import MDEditor
+
 
 const AllColors: React.FC = () => {
     const [data, setData] = useState<Color[]>([]);
@@ -26,7 +28,7 @@ const AllColors: React.FC = () => {
 
     const queryString = findColors.map((color) => `ids=${encodeURIComponent(color.toString())}`).join("&");
 
-    const { isAdmin } = useAuth();
+    const { isAdmin, profileId } = useAuth();
 
     const getAllColors = async (findColors: ColorId[]) => {
         try {
@@ -116,12 +118,22 @@ const AllColors: React.FC = () => {
         }
     }, [colorDetails]);
 
+    const MDEditorField = ({ field, form }: any) => (
+        <MDEditor
+            value={field.value}
+            onChange={(value?: string) => { // Change value type to string | undefined
+                if (value !== undefined) {
+                    form.setFieldValue(field.name, value);
+                }
+            }}
+        />
+    );
+    
     return (
         <>
             <h2>All Colors</h2>
             {data ? (
                 <ul className="colors show" id="allColors">
-                    {isAdmin && (
                         <li
                             className="color-swatch"
                             style={{ backgroundColor: "var(--background-primary)" }}
@@ -129,7 +141,6 @@ const AllColors: React.FC = () => {
                         >
                             +
                         </li>
-                    )}
                     {data.map((color) => (
                         <li
                             className="color-swatch"
@@ -144,71 +155,80 @@ const AllColors: React.FC = () => {
             ) : (
                 <p>Loading colors...</p>
             )}
-            {(colorDetails || showBlankForm) && (
-                <Formik
-                    innerRef={formikRef}
-                    initialValues={{
-                        colorName: colorDetails?.colorName || "",
-                        colorValue: colorDetails?.colorValue || "",
-                        complementaryColors: colorDetails?.complementaryColors?.map(String) || [],
-                        contrastingColors: colorDetails?.contrastingColors?.map(String) || []
-                    }}
-                    validationSchema={Yup.object({
-                        colorName: Yup.string().required("Color name is required"),
-                        colorValue: Yup.string().required("Color value is required"),
-                    })}
-                    onSubmit={(values, { setSubmitting }) => {
-                        placeHolder();
-                    }}
-                >
-                    {({ isSubmitting, values }) => (
-                        <Form>
-                            <div>
-                                <label htmlFor="colorName">Color Name</label>
-                                <Field type="text" name="colorName" />
-                                <ErrorMessage name="colorName" component="div" className="colorName" />
-                            </div>
-                            <div>
-                                <label htmlFor="colorValue">Color Value</label>
-                                <Field type="text" name="colorValue" />
-                                <ErrorMessage name="colorValue" component="div" className="colorValue" />
-                            </div>
-                            <div>
-                                <label htmlFor="complementaryColors">Complementary Colors</label>
-                                <ul className="colors show" id="complementaryColors">
-                                    {data.map((color) => {
-                                        const isSelected = values.complementaryColors.includes(color._id.toString());
-                                        return (
-                                            <li
-                                                key={color._id.toString()}
-                                                className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
-                                                style={{ backgroundColor: `#${color.colorValue}` }}
-                                                onClick={() => handleComplementaryColorClick(color._id.toString())}
-                                            ></li>
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                            <div>
-                                <label htmlFor="contrastingColors">Contrasting Colors</label>
-                                <ul className="colors show" id="contrastingColors">
-                                    {data.map((color) => {
-                                         const isSelected = values.contrastingColors.includes(color._id.toString());
-                                        return (
-                                            <li
-                                                key={color._id.toString()}
-                                                className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
-                                                style={{ backgroundColor: `#${color.colorValue}` }}
-                                                onClick={() => handleContrastingColorClick(color._id.toString())}
-                                            ></li>
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                            <button type="submit" disabled={isSubmitting}>Submit</button>
-                        </Form>
-                    )}
-                </Formik>
+            {isAdmin ? (
+                (colorDetails || showBlankForm) && (
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={{
+                            colorName: colorDetails?.colorName || "",
+                            colorValue: colorDetails?.colorValue || "",
+                            complementaryColors: colorDetails?.complementaryColors?.map(String) || [],
+                            contrastingColors: colorDetails?.contrastingColors?.map(String) || []
+                        }}
+                        validationSchema={Yup.object({
+                            colorName: Yup.string().required("Color name is required"),
+                            colorValue: Yup.string().required("Color value is required"),
+                        })}
+                        onSubmit={(values, { setSubmitting }) => {
+                            placeHolder();
+                        }}
+                    >
+                        {({ isSubmitting, values }) => (
+                            <Form>
+                                <div>
+                                    <label htmlFor="colorName">Color Name</label>
+                                    <Field type="text" name="colorName" />
+                                    <ErrorMessage name="colorName" component="div" className="colorName" />
+                                </div>
+                                <div>
+                                    <label htmlFor="colorValue">Color Value</label>
+                                    <Field type="text" name="colorValue" />
+                                    <ErrorMessage name="colorValue" component="div" className="colorValue" />
+                                </div>
+                                <div>
+                                    <label htmlFor="colorDescription">Color Description</label>
+                                    <Field name="colorDescription" component={MDEditorField} />
+                                    <ErrorMessage name="colorDescription" component="div" className="colorDescription" />
+                                </div>
+                                <div>
+                                    <label htmlFor="complementaryColors">Complementary Colors</label>
+                                    <ul className="colors show" id="complementaryColors">
+                                        {data.map((color) => {
+                                            const isSelected = values.complementaryColors.includes(color._id.toString());
+                                            return (
+                                                <li
+                                                    key={color._id.toString()}
+                                                    className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
+                                                    style={{ backgroundColor: `#${color.colorValue}` }}
+                                                    onClick={() => handleComplementaryColorClick(color._id.toString())}
+                                                ></li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <label htmlFor="contrastingColors">Contrasting Colors</label>
+                                    <ul className="colors show" id="contrastingColors">
+                                        {data.map((color) => {
+                                            const isSelected = values.contrastingColors.includes(color._id.toString());
+                                            return (
+                                                <li
+                                                    key={color._id.toString()}
+                                                    className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
+                                                    style={{ backgroundColor: `#${color.colorValue}` }}
+                                                    onClick={() => handleContrastingColorClick(color._id.toString())}
+                                                ></li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                                <button type="submit" disabled={isSubmitting}>Submit</button>
+                            </Form>
+                        )}
+                    </Formik>
+                )
+            ) : (
+                <p>Sign in as an Administrator</p>
             )}
         </>
     );
