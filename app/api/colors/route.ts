@@ -1,83 +1,108 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectUsers from "../../lib/database/connectUsers"
+import connectUsers from "../../lib/database/connectUsers";
 import { ColorModel } from "@/app/lib/database/models/ColorSchema";
 import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
     try {
         await connectUsers(); // Ensure database connection
-        
-        const { searchParams } = new URL(req.url);
-        const ids = searchParams.getAll("ids");
-        console.log(`the content of ids is: ${ids} and it has a length of ${ids.length}`)
 
-        // if (!ids || ids.length === 0) {
-        //     return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
-        // }
+        const idFromQuery = req.nextUrl.searchParams.get('id');
 
-        // Ensure all IDs are valid MongoDB ObjectId
-        const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+        console.log("Full request URL:", req.url);
+        console.log("Parsed URL:", URL);
+        console.log("idFromQuery:", idFromQuery);
+
         let colors;
-
-        console.log(validIds);
-
-        if (validIds.length === 0) {
-            console.log(`All Colors returned.`)
-            colors = await ColorModel.find();
+        if (idFromQuery) {
+            // If an id is provided, fetch that specific color
+            console.log(`Returning color with id: ${idFromQuery}`);
+            try {
+                if (mongoose.Types.ObjectId.isValid(idFromQuery)) {
+                    colors = await ColorModel.findById(idFromQuery)
+                        .populate({
+                            path: 'complementaryColors',
+                            select: '_id colorName colorValue',
+                            strictPopulate: false
+                        })
+                        .populate({
+                            path: 'contrastingColors',
+                            select: '_id colorName colorValue',
+                            strictPopulate: false
+                        })
+                        .exec();
+                    if (!colors) {
+                        return NextResponse.json({ error: "Color not found" }, { status: 404 });
+                    }
+                    colors = [colors];
+                    return NextResponse.json({ success: true, colors: colors });
+                } else {
+                    return NextResponse.json({ error: "Invalid color ID" }, { status: 400 });
+                }
+            } catch (e: any) {
+                console.error("Error fetching color by ID", e);
+                return NextResponse.json({ error: "Error fetching color", details: e.message }, { status: 500 });
+            }
+        }  else {
+            // Otherwise, fetch all colors
+            console.log(`Returning all colors.`);
+            colors = await ColorModel.find()
+                .populate({
+                    path: 'complementaryColors',
+                    select: '_id colorName colorValue',
+                    strictPopulate: false
+                })
+                .populate({
+                    path: 'contrastingColors',
+                    select: '_id colorName colorValue',
+                    strictPopulate: false
+                })
+                .exec();
+            return NextResponse.json({ success: true, colors: colors });
         }
-        else {
-            console.log(`Specific colors returned`)
-            colors = await ColorModel.find({ _id: { $in: validIds } });
-        }
-
-        // const allColors = await ColorModel.find(); // Fetch all colors
-        // console.log(allColors);
-        // const colors = await ColorModel.find({ _id: { $in: validIds } });
-        console.log(`The value of colors is: ${colors}`);
-        return NextResponse.json({ success: true, colors: colors });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching colors:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
     }
 }
 
 export async function POST(req: NextRequest) {
-
-    //     // Check if color already exists
-    //     const existingColor = await ColorModel.findOne({ colorName });
-    //     console.log(`The existing color is ${existingColor}`);
-    //     if (existingColor) {
-    //         console.log(`Existing Color found and an error is being returned`)
-    //         console.log(`The color ${colorName} already exists.`);
-    //         return NextResponse.json(
-    //             { error: `The color ${colorName} already exists in the database.`}, 
-    //             { status: 409 }
-    //         );
-    //     }
-
-    //     // Create and save the new color
-    //     const newColor = new ColorModel({
-    //         colorName, 
-    //         colorValue, 
-    //         colorDescription, 
-    //         colorFamily, 
-    //         complimentaryColors,
-    //         contrastingColors,
-    //         status
-    //     });
-    //     if (!existingColor) {
-    //         console.log(`No existing color was found.  No error is being returned.`)
-    //         await newColor.save();
-    //     }
-
     try {
-        const allColors = await ColorModel.find();
-        console.log(allColors);
+        await connectUsers();
+        const data = await req.json();
+        console.log(`The POST route ran for api/colors`);
+        console.log("Received data:", data);
 
-        return NextResponse.json({ success: true, colors: allColors});
+        if (data._id) {
+            //Update existing color
+            const objectId = new mongoose.Types.ObjectId(data._id);
+            try { // Wrap the update operation in a try-catch
+                const updatedColor = await ColorModel.findByIdAndUpdate(objectId, data, { new: true });
+                if (!updatedColor) {
+                    return NextResponse.json({ error: "Color not found" }, { status: 404 });
+                }
+                return NextResponse.json({ success: true, message: "Color updated successfully", color: updatedColor });
+            } catch (updateError: any) { // Catch errors during the update
+                console.error("Error updating color:", updateError);
+                return NextResponse.json({ error: "Failed to update color", details: updateError.message }, { status: 500 });
+            }
 
-    } catch (error) {
-        console.error("Error creating user:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+        } else {
+            //create new color.
+            const newColor = new ColorModel(data);
+            try {
+                const savedColor = await newColor.save();
+                return NextResponse.json({ success: true, message: "Color created successfully", color: savedColor, status: 201 });
+            } catch (saveError: any) { // Catch errors during the save
+                 console.error("Error saving new color:", saveError);
+                return NextResponse.json({ error: "Failed to create color", details: saveError.message }, { status: 500 });
+            }
+        }
+
+
+    } catch (error: any) {
+        console.error("Error processing color data:", error);
+        return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
     }
 }
