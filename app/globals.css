@@ -187,3 +187,20 @@
     display: flex;
     justify-content: center;
   }
+
+  ul.no-bullets{
+    list-style: none;
+  }
+
+  .capitalize{
+    text-transform: capitalize;
+  }
+
+  span.color-swatch-small{
+    display: inline-block;
+    border-style: solid;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+  }

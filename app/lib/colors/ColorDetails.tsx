@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Color, RelatedColor } from "../types/color";
-import MDEditor from "@uiw/react-md-editor";
+import MDViewer from "@uiw/react-md-editor";
+import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
 import RelatedColors from "./RelatedColors";
 import mongoose from 'mongoose';
 import { useAuth } from "../../context/AuthContext";
 
 interface ColorDetailsDisplayProps {
     colorId: string;
+    onEdit: (colorId: string) => void;
 }
 
-const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ colorId }) => {
+const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ onEdit, colorId }) => {
     const [color, setColor] = useState<Color | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -83,7 +85,7 @@ const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ colorId }) =>
             <p>Color Value: #{color.colorValue}</p>
             <div>
                 <h4>Description:</h4>
-                <MDEditor.Markdown source={color.colorDescription} />
+                <ReactMarkdown>{color.colorDescription}</ReactMarkdown>
             </div>
             {color && color.complementaryColors && color.complementaryColors.length > 0 && (
                 <RelatedColors colors={getRelatedColorsArray(color.complementaryColors)} title="Complementary Colors" />
@@ -92,12 +94,11 @@ const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ colorId }) =>
                 <RelatedColors colors={getRelatedColorsArray(color.contrastingColors)} title="Contrasting Colors" />
             )}
             {isAdmin ? (
-                <button>Edit Color</button>
+                <button onClick={() => onEdit('')}>Edit Color</button>
             ) : (
                 null
             )}
-        </div>
-
+        </div> 
     );
 };
 

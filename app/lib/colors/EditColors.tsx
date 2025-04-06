@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Color, ColorId } from "../lib/types/color";
+import { Color, ColorId } from "../types/color";
 import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import * as Yup from "yup";
@@ -9,11 +9,10 @@ import ColorDetailsDisplay from './ColorDetails';
 
 interface EditColorsProps {
     colorId: string;
-    onClose: () => void;
     onColorUpdate: (updatedColor: Color) => void;
 }
 
-const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate }) => {
+const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate }) => {
     const [colorDetails, setColorDetails] = useState<Color | null>(null);
     const [error, setError] = useState<string | null>(null);
     const formikRef = useRef<FormikProps<{
@@ -23,25 +22,27 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate
         contrastingColors: string[];
         colorDescription: string;
     }>>(null);
+    const [colorLoaded, setColorLoaded] = useState<boolean>(false);
     const { isAdmin, profileId } = useAuth();
     const [data, setData] = useState<Color[]>([]);
+    const [initialFormValues, setInitialFormValues] = useState<any>(null);
+    const [initialName, setInitialName] = useState<string>();
 
+    // const getAllColors = async (findColors: ColorId[]) => {
+    //     try {
+    //         const res = await fetch(`/api/colors?${findColors.map((color) => `ids=${encodeURIComponent(color.toString())}`).join("&")}`, {
+    //             method: "GET",
+    //             headers: { "Content-Type": "application/json" },
+    //         });
 
-    const getAllColors = async (findColors: ColorId[]) => {
-        try {
-            const res = await fetch(`/api/colors?${findColors.map((color) => `ids=${encodeURIComponent(color.toString())}`).join("&")}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
+    //         if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
 
-            if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
-
-            const result = await res.json();
-            setData(result.colors || []);
-        } catch (err: any) {
-            setError("There was an error fetching the colors.");
-        }
-    };
+    //         const result = await res.json();
+    //         setData(result.colors || []);
+    //     } catch (err: any) {
+    //         setError("There was an error fetching the colors.");
+    //     }
+    // };
 
     const updateColor = async (values: Color) => {
         try {
@@ -58,7 +59,6 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate
 
             const result = await res.json();
             onColorUpdate(result.color); // Notify parent component
-            onClose(); // Close the form
             setError(null);
 
         } catch (err: any) {
@@ -66,42 +66,51 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate
         }
     };
 
-    useEffect(() => {
-        const fetchColorDetails = async () => {
-            try {
-                const res = await fetch(`/api/colors?ids=${encodeURIComponent(colorId)}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
-
-                const result = await res.json();
-                setColorDetails(result.colors[0] || null);
-            } catch (err: any) {
-                setError("There was an error fetching the color details.");
-            }
-        };
-        if(isAdmin){
-            fetchColorDetails();
-            getAllColors([]);
-        }
-
-    }, [colorId, isAdmin]);
-
-    useEffect(() => {
-        if (colorDetails && formikRef.current && isAdmin) {
-             const complementaryIds = colorDetails.complementaryColors?.map((c: any) => c._id?.toString() || c.toString()) || [];
-            const contrastingIds = colorDetails.contrastingColors?.map((c: any) => c._id?.toString() || c.toString()) || [];
-            formikRef.current.setValues({
-                colorName: colorDetails.colorName || "",
-                colorValue: colorDetails.colorValue || "",
-                complementaryColors: complementaryIds,
-                contrastingColors: contrastingIds,
-                colorDescription: colorDetails.colorDescription || "",
+    const fetchColorDetails = async () => {
+        try {
+            const res = await fetch(`/api/colors?id=${encodeURIComponent(colorId)}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
             });
+
+            if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
+
+            const result = await res.json();
+            console.log(`Result from fetchColorDetails: ${result}`);
+            const fetchedColorDetails = result.colors[0];
+            setColorDetails(fetchedColorDetails);
+            console.log(`Color details passed to setInitialFormValues: ${colorDetails}`)
         }
-    }, [colorDetails, isAdmin]);
+        catch{
+
+        }
+    };
+    useEffect(() =>{
+        fetchColorDetails()
+    }, [colorId]);
+
+    useEffect(() =>{
+        if (colorDetails?.colorName && isAdmin) {
+            setInitialFormValues({
+                colorName: colorDetails.colorName,
+                colorValue: colorDetails.colorValue,
+                createdBy:  colorDetails.createdBy,
+                complementaryColors: colorDetails.complementaryColors,
+                contrastingColors: colorDetails.contrastingColors,
+                colorDescription: colorDetails.colorDescription
+            })
+        }
+        else {
+            setInitialFormValues({
+                colorName: "",
+                colorValue: "",
+                createdBy:  "",
+                complementaryColors: [],
+                contrastingColors: [],
+                colorDescription: "This is a test"
+            })
+        };
+    }, [colorDetails])
 
     const MDEditorField = ({ field, form }: any) => (
         <MDEditor
@@ -139,20 +148,14 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate
             formikRef.current.setFieldValue('contrastingColors', updatedContrastingColors);
         }
     };
-
+    console.log(`isAdmin: ${isAdmin}.  colorDetails: ${colorDetails}, initialFormValues: ${initialFormValues}`)
     return (
         <>
-            {isAdmin && colorDetails && (
+            {isAdmin && colorDetails && initialFormValues ? (
                 <Formik
                     innerRef={formikRef}
-                    initialValues={{
-                        colorName: colorDetails.colorName || "",
-                        colorValue: colorDetails.colorValue || "",
-                        createdBy: profileId || "",
-                         complementaryColors: colorDetails?.complementaryColors?.map((c: any) => c._id?.toString() || c.toString()) || [],
-                        contrastingColors: colorDetails?.contrastingColors?.map((c: any) => c._id?.toString() || c.toString()) || [],
-                        colorDescription: colorDetails.colorDescription || "",
-                    }}
+                    initialValues={initialFormValues}
+                    enableReinitialize={true}
                     validationSchema={Yup.object({
                         colorName: Yup.string().required("Color name is required"),
                         colorValue: Yup.string().required("Color value is required"),
@@ -162,8 +165,8 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate
                         const formattedValues: Color = {
                             ...values,
                             _id: colorDetails._id,
-                            complementaryColors: values.complementaryColors,
-                            contrastingColors: values.contrastingColors
+                            // complementaryColors: values.complementaryColors,
+                            // contrastingColors: values.contrastingColors,
                         };
                         updateColor(formattedValues).finally(() => setSubmitting(false));
                     }}
@@ -220,12 +223,14 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onClose, onColorUpdate
                             <button type="submit" disabled={isSubmitting}>
                                 Submit
                             </button>
-                             <button type="button" onClick={onClose}>
+                             {/* <button type="button" onClick={onClose}>
                                 Cancel
-                            </button>
+                            </button> */}
                         </Form>
                     )}
                 </Formik>
+            ) : (
+                isAdmin && <p>Loading color details...</p>
             )}
             {error && <p className="error-message">{error}</p>}
         </>

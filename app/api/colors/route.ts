@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
                         return NextResponse.json({ error: "Color not found" }, { status: 404 });
                     }
                     colors = [colors];
+                    console.log(colors);
                     return NextResponse.json({ success: true, colors: colors });
                 } else {
                     return NextResponse.json({ error: "Invalid color ID" }, { status: 400 });

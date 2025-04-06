@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { Color, ColorId } from "../types/color";
 import { useRouter } from 'next/navigation';
+import { useAuth } from "../../context/AuthContext";
 
-const AllColors: React.FC = () => {
+const AllColors: React.FC = () => { // Use the interface
     const [data, setData] = useState<Color[]>([]);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-
+    const { isAdmin } = useAuth();
 
     const findColors: ColorId[] = [];
     const queryString = findColors.map((color) => `ids=${encodeURIComponent(color.toString())}`).join("&");
@@ -53,7 +54,7 @@ const AllColors: React.FC = () => {
             <h2>All Colors</h2>
             {data ? (
                 <ul className="colors show" id="allColors">
-
+                    {isAdmin && <li className="color-swatch" style={{backgroundColor: "blue"}}>+</li>}
                     {data.map((color) => (
                         <li
                             className="color-swatch"
@@ -68,9 +69,6 @@ const AllColors: React.FC = () => {
             ) : (
                 <p>Loading colors...</p>
             )}
-
-            {error && <p className="error-message">{error}</p>}
-
         </>
     );
 };
