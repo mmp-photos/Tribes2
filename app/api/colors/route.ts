@@ -14,12 +14,14 @@ export async function GET(req: NextRequest) {
         console.log("idFromQuery:", idFromQuery);
 
         let colors;
+        const findCondition = { status: "ok" }; // Define the condition to find only status: "ok"
+
         if (idFromQuery) {
-            // If an id is provided, fetch that specific color
-            console.log(`Returning color with id: ${idFromQuery}`);
+            // If an id is provided, fetch that specific color with status "ok"
+            console.log(`Returning color with id: ${idFromQuery} and status: "ok"`);
             try {
                 if (mongoose.Types.ObjectId.isValid(idFromQuery)) {
-                    colors = await ColorModel.findById(idFromQuery)
+                    colors = await ColorModel.findOne({ _id: idFromQuery, ...findCondition }) // Added findCondition
                         .populate({
                             path: 'complementaryColors',
                             select: '_id colorName colorValue',
@@ -32,7 +34,7 @@ export async function GET(req: NextRequest) {
                         })
                         .exec();
                     if (!colors) {
-                        return NextResponse.json({ error: "Color not found" }, { status: 404 });
+                        return NextResponse.json({ error: "Color not found or status is not 'ok'" }, { status: 404 });
                     }
                     colors = [colors];
                     console.log(colors);
@@ -44,10 +46,10 @@ export async function GET(req: NextRequest) {
                 console.error("Error fetching color by ID", e);
                 return NextResponse.json({ error: "Error fetching color", details: e.message }, { status: 500 });
             }
-        }  else {
-            // Otherwise, fetch all colors
-            console.log(`Returning all colors.`);
-            colors = await ColorModel.find()
+        } else {
+            // Otherwise, fetch all colors with status "ok"
+            console.log(`Returning all colors with status: "ok".`);
+            colors = await ColorModel.find(findCondition) // Added findCondition
                 .populate({
                     path: 'complementaryColors',
                     select: '_id colorName colorValue',
@@ -67,43 +69,37 @@ export async function GET(req: NextRequest) {
     }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
     try {
-        await connectUsers();
-        const data = await req.json();
-        console.log(`The POST route ran for api/colors`);
-        console.log("Received data:", data);
+        const data = await request.json();
 
-        if (data._id) {
-            //Update existing color
-            const objectId = new mongoose.Types.ObjectId(data._id);
-            try { // Wrap the update operation in a try-catch
+        if (!data._id) {
+            // Handle create new color logic here if _id is missing
+            // You might want to set the initial status to "ok" here
+            const newColor = await ColorModel.create({ ...data, status: "ok" });
+            return NextResponse.json({ color: newColor }, { status: 201 });
+        } else {
+            // Handle update existing color logic
+            try {
+                const objectId = new mongoose.Types.ObjectId(data._id);
+                // When updating, you might want to allow changing the status,
+                // so we don't enforce status: "ok" in the update query.
                 const updatedColor = await ColorModel.findByIdAndUpdate(objectId, data, { new: true });
+
                 if (!updatedColor) {
                     return NextResponse.json({ error: "Color not found" }, { status: 404 });
                 }
-                return NextResponse.json({ success: true, message: "Color updated successfully", color: updatedColor });
-            } catch (updateError: any) { // Catch errors during the update
-                console.error("Error updating color:", updateError);
-                return NextResponse.json({ error: "Failed to update color", details: updateError.message }, { status: 500 });
-            }
 
+                return NextResponse.json({ color: updatedColor }, { status: 200 });
 
-        } else {
-            //create new color.
-            const newColor = new ColorModel(data);
-            try {
-                const savedColor = await newColor.save();
-                return NextResponse.json({ success: true, message: "Color created successfully", color: savedColor, status: 201 });
-            } catch (saveError: any) { // Catch errors during the save
-                 console.error("Error saving new color:", saveError);
-                return NextResponse.json({ error: "Failed to create color", details: saveError.message }, { status: 500 });
+            } catch (bsonError: any) {
+                console.error("Error updating color (BSONError):", bsonError);
+                return NextResponse.json({ error: `Invalid ObjectId format: ${bsonError.message}`, valueType: typeof data._id }, { status: 400 });
             }
         }
 
-
     } catch (error: any) {
-        console.error("Error processing color data:", error);
-        return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
+        console.error("Error processing request:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

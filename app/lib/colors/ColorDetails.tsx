@@ -94,11 +94,11 @@ const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ onEdit, color
                 <RelatedColors colors={getRelatedColorsArray(color.contrastingColors)} title="Contrasting Colors" />
             )}
             {isAdmin ? (
-                <button onClick={() => onEdit('')}>Edit Color</button>
+                <button onClick={() => onEdit(color._id?.toString())}>Edit Color</button>
             ) : (
                 null
             )}
-        </div> 
+        </div>
     );
 };
 

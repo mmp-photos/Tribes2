@@ -8,11 +8,12 @@ import MDEditor from "@uiw/react-md-editor";
 import ColorDetailsDisplay from './ColorDetails';
 
 interface EditColorsProps {
-    colorId: string;
+    colorId: string | null; // Allow null for adding new
     onColorUpdate: (updatedColor: Color) => void;
+    onColorAdded?: (newColor: Color) => void; // Optional prop for handling new color
 }
 
-const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate }) => {
+const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate, onColorAdded }) => {
     const [colorDetails, setColorDetails] = useState<Color | null>(null);
     const [error, setError] = useState<string | null>(null);
     const formikRef = useRef<FormikProps<{
@@ -22,27 +23,30 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate }) => {
         contrastingColors: string[];
         colorDescription: string;
     }>>(null);
-    const [colorLoaded, setColorLoaded] = useState<boolean>(false);
+    const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
     const { isAdmin, profileId } = useAuth();
     const [data, setData] = useState<Color[]>([]);
     const [initialFormValues, setInitialFormValues] = useState<any>(null);
     const [initialName, setInitialName] = useState<string>();
 
-    // const getAllColors = async (findColors: ColorId[]) => {
-    //     try {
-    //         const res = await fetch(`/api/colors?${findColors.map((color) => `ids=${encodeURIComponent(color.toString())}`).join("&")}`, {
-    //             method: "GET",
-    //             headers: { "Content-Type": "application/json" },
-    //         });
+    const getAllColors = async () => {
+        try {
+            const res = await fetch(`/api/colors`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+            if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
+            const result = await res.json();
+            setData(result.colors || []);
+        } catch (err: any) {
+            setError("There was an error fetching the OK colors.");
+            console.error(err);
+        }
+    };
 
-    //         if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
-
-    //         const result = await res.json();
-    //         setData(result.colors || []);
-    //     } catch (err: any) {
-    //         setError("There was an error fetching the colors.");
-    //     }
-    // };
+    useEffect(() => {
+        getAllColors();
+    }, []);
 
     const updateColor = async (values: Color) => {
         try {
@@ -58,7 +62,14 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate }) => {
             }
 
             const result = await res.json();
-            onColorUpdate(result.color); // Notify parent component
+            if (result.color._id && !colorId) {
+                // New color added
+                onColorAdded?.(result.color);
+                setIsAddingNew(false); // Reset to edit mode
+                // Optionally clear the form or navigate
+            } else {
+                onColorUpdate(result.color); // Existing color updated
+            }
             setError(null);
 
         } catch (err: any) {
@@ -67,50 +78,59 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate }) => {
     };
 
     const fetchColorDetails = async () => {
+        if (!colorId) {
+            setColorDetails(null); // No need to fetch if adding new
+            return;
+        }
         try {
             const res = await fetch(`/api/colors?id=${encodeURIComponent(colorId)}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
-
             if (!res.ok) throw new Error(`Failed request. Status: ${res.status}`);
-
             const result = await res.json();
-            console.log(`Result from fetchColorDetails: ${result}`);
             const fetchedColorDetails = result.colors[0];
             setColorDetails(fetchedColorDetails);
-            console.log(`Color details passed to setInitialFormValues: ${colorDetails}`)
-        }
-        catch{
-
+        } catch (err) {
+            setError("There was an error fetching color details.");
+            console.error(err);
         }
     };
-    useEffect(() =>{
-        fetchColorDetails()
+
+    useEffect(() => {
+        fetchColorDetails();
     }, [colorId]);
 
-    useEffect(() =>{
-        if (colorDetails?.colorName && isAdmin) {
-            setInitialFormValues({
-                colorName: colorDetails.colorName,
-                colorValue: colorDetails.colorValue,
-                createdBy:  colorDetails.createdBy,
-                complementaryColors: colorDetails.complementaryColors,
-                contrastingColors: colorDetails.contrastingColors,
-                colorDescription: colorDetails.colorDescription
-            })
-        }
-        else {
+    useEffect(() => {
+        if (isAddingNew) {
             setInitialFormValues({
                 colorName: "",
                 colorValue: "",
-                createdBy:  "",
+                createdBy: profileId || "", // Assuming you want to set the creator
                 complementaryColors: [],
                 contrastingColors: [],
-                colorDescription: "This is a test"
-            })
-        };
-    }, [colorDetails])
+                colorDescription: ""
+            });
+        } else if (colorDetails?.colorName && isAdmin) {
+            setInitialFormValues({
+                colorName: colorDetails.colorName,
+                colorValue: colorDetails.colorValue,
+                createdBy: colorDetails.createdBy,
+                complementaryColors: colorDetails.complementaryColors ? colorDetails.complementaryColors.map(id => typeof id === 'object' && id !== null && '_id' in id ? id._id.toString() : id.toString()) : [],
+                contrastingColors: colorDetails.contrastingColors ? colorDetails.contrastingColors.map(id => typeof id === 'object' && id !== null && '_id' in id ? id._id.toString() : id.toString()) : [],
+                colorDescription: colorDetails.colorDescription
+            });
+        } else {
+            setInitialFormValues({
+                colorName: "",
+                colorValue: "",
+                createdBy: profileId || "",
+                complementaryColors: [],
+                contrastingColors: [],
+                colorDescription: ""
+            });
+        }
+    }, [colorDetails, isAdmin, isAddingNew, profileId]);
 
     const MDEditorField = ({ field, form }: any) => (
         <MDEditor
@@ -123,118 +143,160 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate }) => {
         />
     );
 
-      const handleComplementaryColorClick = (clickedColorId: string) => {
+    const handleComplementaryColorClick = (clickedColorId: string) => {
         if (formikRef.current) {
             const currentComplementaryColors = formikRef.current.values.complementaryColors || [];
             const isSelected = currentComplementaryColors.includes(clickedColorId);
-
             const updatedComplementaryColors = isSelected
                 ? currentComplementaryColors.filter((id) => id !== clickedColorId)
                 : [...currentComplementaryColors, clickedColorId];
-
             formikRef.current.setFieldValue('complementaryColors', updatedComplementaryColors);
         }
     };
 
     const handleContrastingColorClick = (clickedColorId: string) => {
-          if (formikRef.current) {
+        if (formikRef.current) {
             const currentContrastingColors = formikRef.current.values.contrastingColors || [];
             const isSelected = currentContrastingColors.includes(clickedColorId);
-
             const updatedContrastingColors = isSelected
                 ? currentContrastingColors.filter((id) => id !== clickedColorId)
                 : [...currentContrastingColors, clickedColorId];
-
             formikRef.current.setFieldValue('contrastingColors', updatedContrastingColors);
         }
     };
-    console.log(`isAdmin: ${isAdmin}.  colorDetails: ${colorDetails}, initialFormValues: ${initialFormValues}`)
+
+    const startAddNew = () => {
+        setIsAddingNew(true);
+        // Optionally reset colorId if it's being passed down
+        // if (colorId) {
+        //   onColorUpdate(null); // Or however you signal a reset
+        // }
+    };
+
+    const handleCancelAdd = () => {
+        setIsAddingNew(false);
+        // Optionally reset the form or navigate
+    };
+
     return (
         <>
-            {isAdmin && colorDetails && initialFormValues ? (
-                <Formik
-                    innerRef={formikRef}
-                    initialValues={initialFormValues}
-                    enableReinitialize={true}
-                    validationSchema={Yup.object({
-                        colorName: Yup.string().required("Color name is required"),
-                        colorValue: Yup.string().required("Color value is required"),
-                        colorDescription: Yup.string(),
-                    })}
-                    onSubmit={(values, { setSubmitting }) => {
-                        const formattedValues: Color = {
-                            ...values,
-                            _id: colorDetails._id,
-                            // complementaryColors: values.complementaryColors,
-                            // contrastingColors: values.contrastingColors,
-                        };
-                        updateColor(formattedValues).finally(() => setSubmitting(false));
-                    }}
-                >
-                    {({ isSubmitting, values }) => (
-                        <Form>
-                            <div>
-                                <label htmlFor="colorName">Color Name</label>
-                                <Field type="text" name="colorName" />
-                                <ErrorMessage name="colorName" component="div" className="colorName" />
-                            </div>
-                            <div>
-                                <label htmlFor="colorValue">Color Value</label>
-                                <Field type="text" name="colorValue" />
-                                <ErrorMessage name="colorValue" component="div" className="colorValue" />
-                            </div>
-                            <div>
-                                <label htmlFor="colorDescription">Color Description</label>
-                                <Field name="colorDescription" component={MDEditorField} />
-                                <ErrorMessage name="colorDescription" component="div" />
-                            </div>
-                             <div>
-                                    <label htmlFor="complementaryColors">Complementary Colors</label>
-                                    <ul className="colors show" id="complementaryColors">
-                                        {data.map((color) => {
-                                            const isSelected = values.complementaryColors.includes(color._id.toString());
-                                            return (
-                                                <li
-                                                    key={color._id.toString()}
-                                                    className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
-                                                    style={{ backgroundColor: `#${color.colorValue}` }}
-                                                    onClick={() => handleComplementaryColorClick(color._id.toString())}
-                                                ></li>
-                                            );
-                                        })}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <label htmlFor="contrastingColors">Contrasting Colors</label>
-                                     <ul className="colors show" id="contrastingColors">
-                                        {data.map((color) => {
-                                            const isSelected = values.contrastingColors.includes(color._id.toString());
-                                            return (
-                                                <li
-                                                    key={color._id.toString()}
-                                                    className={`color-swatch-small ${isSelected ? 'swatch-selected' : ''}`}
-                                                    style={{ backgroundColor: `#${color.colorValue}` }}
-                                                    onClick={() => handleContrastingColorClick(color._id.toString())}
-                                                ></li>
-                                            );
-                                        })}
-                                    </ul>
-                                </div>
-                            <button type="submit" disabled={isSubmitting}>
-                                Submit
-                            </button>
-                             {/* <button type="button" onClick={onClose}>
-                                Cancel
-                            </button> */}
-                        </Form>
+            {isAdmin && (
+                <div>
+                    {!isAddingNew && !colorDetails && (
+                        <button onClick={startAddNew}>Add New Color</button>
                     )}
-                </Formik>
-            ) : (
-                isAdmin && <p>Loading color details...</p>
+
+                    {(isAddingNew || (colorDetails && initialFormValues)) ? (
+                        <Formik
+                            innerRef={formikRef}
+                            initialValues={initialFormValues}
+                            enableReinitialize={true}
+                            validationSchema={Yup.object({
+                                colorName: Yup.string().required("Color name is required"),
+                                colorValue: Yup.string().required("Color value is required"),
+                                colorDescription: Yup.string(),
+                            })}
+                            onSubmit={(values, { setSubmitting }) => {
+                                updateColor(values as Color).finally(() => setSubmitting(false));
+                            }}
+                        >
+                            {({ isSubmitting, values }) => (
+                                <Form>
+                                    <div>
+                                        <label htmlFor="colorName">Color Name</label>
+                                        <Field type="text" name="colorName" />
+                                        <ErrorMessage name="colorName" component="div" className="colorName" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="colorValue">Color Value</label>
+                                        <Field type="text" name="colorValue" />
+                                        <ErrorMessage name="colorValue" component="div" className="colorValue" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="colorDescription">Color Description</label>
+                                        <Field name="colorDescription" component={MDEditorField} />
+                                        <ErrorMessage name="colorDescription" component="div" />
+                                    </div>
+                                    <div>
+                                        <h4>Complementary Colors</h4>
+                                        <label htmlFor="complementaryColors">Currently Selected:</label>
+                                        <ul className="colors show" id="selectedComplementaryColors">
+                                            {data
+                                                .filter(color =>
+                                                    (values.complementaryColors || []).includes(color._id.toString())
+                                                )
+                                                .map(color => (
+                                                    <li
+                                                        key={color._id.toString()}
+                                                        className="color-swatch-small swatch-selected"
+                                                        style={{ backgroundColor: `#${color.colorValue}` }}
+                                                        onClick={() => handleComplementaryColorClick(color._id.toString())}
+                                                    ></li>
+                                                ))}
+                                        </ul>
+                                        <p>Available Colors:</p>
+                                        <ul className="colors show" id="availableComplementaryColors">
+                                            {data
+                                                .filter(color => !(values.complementaryColors || []).includes(color._id.toString()))
+                                                .map(color => (
+                                                    <li
+                                                        key={color._id.toString()}
+                                                        className={`color-swatch-small ${values.complementaryColors?.includes(color._id.toString()) ? 'swatch-selected' : ''}`}
+                                                        style={{ backgroundColor: `#${color.colorValue}` }}
+                                                        onClick={() => handleComplementaryColorClick(color._id.toString())}
+                                                    ></li>
+                                                ))}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4>Contrasting Colors</h4>
+                                        <label htmlFor="contrastingColors">Currently Selected:</label>
+                                        <ul className="colors show" id="selectedContrastingColors">
+                                            {data
+                                                .filter(color =>
+                                                    (values.contrastingColors || []).includes(color._id.toString())
+                                                )
+                                                .map(color => (
+                                                    <li
+                                                        key={color._id.toString()}
+                                                        className="color-swatch-small swatch-selected"
+                                                        style={{ backgroundColor: `#${color.colorValue}` }}
+                                                        onClick={() => handleContrastingColorClick(color._id.toString())}
+                                                    ></li>
+                                                ))}
+                                        </ul>
+                                        <p>Available Colors:</p>
+                                        <ul className="colors show" id="availableContrastingColors">
+                                            {data
+                                                .filter(color => !(values.contrastingColors || []).includes(color._id.toString()))
+                                                .map(color => (
+                                                    <li
+                                                        key={color._id.toString()}
+                                                        className={`color-swatch-small ${values.contrastingColors?.includes(color._id.toString()) ? 'swatch-selected' : ''}`}
+                                                        style={{ backgroundColor: `#${color.colorValue}` }}
+                                                        onClick={() => handleContrastingColorClick(color._id.toString())}
+                                                    ></li>
+                                                ))}
+                                        </ul>
+                                    </div>
+                                    <button type="submit" disabled={isSubmitting}>
+                                        {isAddingNew ? 'Add Color' : 'Update Color'}
+                                    </button>
+                                    {isAddingNew && (
+                                        <button type="button" onClick={handleCancelAdd}>
+                                            Cancel
+                                        </button>
+                                    )}
+                                </Form>
+                            )}
+                        </Formik>
+                    ) : (
+                        isAdmin && <p>Loading color details...</p>
+                    )}
+                    {error && <p className="error-message">{error}</p>}
+                </div>
             )}
-            {error && <p className="error-message">{error}</p>}
         </>
     );
-};
-
+}
 export default EditColors;

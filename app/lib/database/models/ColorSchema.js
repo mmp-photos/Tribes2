@@ -18,7 +18,7 @@ const colorSchema = new Schema(
     colorFamily:
         [{ type: mongoose.Schema.Types.ObjectId, ref: "ColorFamily" }]
     ,
-    complimentaryColors:
+    complementaryColors:
         [{ type: mongoose.Schema.Types.ObjectId, ref: "Color" }]
     ,
     contrastingColors:

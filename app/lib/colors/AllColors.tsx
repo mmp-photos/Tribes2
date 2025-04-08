@@ -4,7 +4,11 @@ import { Color, ColorId } from "../types/color";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "../../context/AuthContext";
 
-const AllColors: React.FC = () => { // Use the interface
+interface AllColorsProps {
+    onAddNewClick: () => void;
+}
+
+const AllColors: React.FC<AllColorsProps> = ({ onAddNewClick }) => {
     const [data, setData] = useState<Color[]>([]);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -54,14 +58,14 @@ const AllColors: React.FC = () => { // Use the interface
             <h2>All Colors</h2>
             {data ? (
                 <ul className="colors show" id="allColors">
-                    {isAdmin && <li className="color-swatch" style={{backgroundColor: "blue"}}>+</li>}
+                    {isAdmin && <li className="color-swatch" onClick={onAddNewClick}  style={{backgroundColor: "blue"}}>+</li>}
                     {data.map((color) => (
                         <li
+                        key={color._id?.toString()} // Use the unique ID as the key
                             className="color-swatch"
                             onMouseOver={colorMouseOver}
                             onMouseOut={colorMouseOut}
-                            onClick={() => router.push(`/colors?id=${color._id.toString()}`)}
-                            key={color._id?.toString()}
+                            onClick={() => router.push(`/colors?id=${color._id?.toString()}`)}
                             style={{ backgroundColor: `#${color.colorValue}` }}
                         ></li>
                     ))}
