@@ -1,103 +1,88 @@
+// ColorDetailsDisplay.tsx
+"use client";
 import React, { useState, useEffect } from "react";
-import { Color, RelatedColor } from "../types/color";
-import MDViewer from "@uiw/react-md-editor";
-import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
+import { Color } from "../types/color";
+import { ObjectId } from "mongoose"; // Import ObjectId type if needed
 import RelatedColors from "./RelatedColors";
-import mongoose from 'mongoose';
-import { useAuth } from "../../context/AuthContext";
 
 interface ColorDetailsDisplayProps {
     colorId: string;
-    onEdit: (colorId: string) => void;
+    onEdit: (id: string) => void;
+    onDelete: (id: string) => void;
 }
 
-const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ onEdit, colorId }) => {
+interface RelatedColor {
+    _id: string;
+    colorName: string;
+    colorValue: string;
+}
+
+const ColorDetailsDisplay: React.FC<ColorDetailsDisplayProps> = ({ colorId, onEdit, onDelete }) => {
     const [color, setColor] = useState<Color | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const { isAdmin } = useAuth();
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchColorDetails = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Basic validation of the colorId.
-                if (!colorId || !mongoose.Types.ObjectId.isValid(colorId)) {
-                    setError("Invalid color ID.");
-                    setLoading(false);
-                    return;
-                }
-
-                const res = await fetch(`/api/colors?id=${encodeURIComponent(colorId)}`);
-
+                const res = await fetch(`/api/colors?id=${encodeURIComponent(colorId)}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
                 if (!res.ok) {
-                    setError(`Failed to fetch color details. Status: ${res.status}`);
-                    setLoading(false);
-                    return;
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || `Failed to fetch color. Status: ${res.status}`);
                 }
-                const data = await res.json();
-                if (data.colors && data.colors.length > 0) {
-                    setColor(data.colors[0]); //  data.colors is an array
+                const result = await res.json();
+                if (result.colors && result.colors.length > 0) {
+                    setColor(result.colors[0]);
+                } else {
+                    setError("Color not found.");
                 }
-                else {
-                    setError("Color not found");
-                    setLoading(false);
-                    return;
-                }
-
             } catch (err: any) {
                 setError(err.message || "An error occurred while fetching color details.");
+                console.error(err);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchColorDetails();
+        if (colorId) {
+            fetchColorDetails();
+        } else {
+            setColor(null);
+            setLoading(false);
+        }
     }, [colorId]);
 
     if (loading) {
-        return <div>Loading color details...</div>;
+        return <p>Loading color details...</p>;
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <p className="error-message">{error}</p>;
     }
 
     if (!color) {
-        return <div>No color details to display.</div>;
+        return <p>No color details to display.</p>;
     }
 
-    // Helper function to ensure we only pass Color objects to RelatedColors
-    const getRelatedColorsArray = (colors: any[] | undefined): Color[] => {
-        if (!colors) return [];
-        return colors.filter((c): c is Color =>
-            typeof c === 'object' &&
-            c !== null &&
-            'colorName' in c &&  // Check for colorName
-            'colorValue' in c    // and colorValue properties
-        );
-    };
-
     return (
-        <div className="color-details">
-            <h3 style={{ color: `#${color.colorValue}` }}>{color.colorName}</h3>
-            <p>Color Value: #{color.colorValue}</p>
-            <div>
-                <h4>Description:</h4>
-                <ReactMarkdown>{color.colorDescription}</ReactMarkdown>
-            </div>
-            {color && color.complementaryColors && color.complementaryColors.length > 0 && (
-                <RelatedColors colors={getRelatedColorsArray(color.complementaryColors)} title="Complementary Colors" />
+        <div>
+            <h2>{color.colorName}</h2>
+            <p>Value: {color.colorValue}</p>
+            <p>Description: {color.colorDescription}</p>
+            {color.complementaryColors && color.complementaryColors.length > 0 && (
+                <RelatedColors colors={color.complementaryColors} title="Complementary Colors" />
             )}
-            {color && color.contrastingColors && color.contrastingColors.length > 0 && (
-                <RelatedColors colors={getRelatedColorsArray(color.contrastingColors)} title="Contrasting Colors" />
-            )}
-            {isAdmin ? (
-                <button onClick={() => onEdit(color._id?.toString())}>Edit Color</button>
-            ) : (
-                null
-            )}
+
+            {color.contrastingColors && color.contrastingColors.length > 0 && (
+                <RelatedColors colors={color.contrastingColors} title="Contrasting Colors" />
+            )}                
+            <button onClick={() => onEdit(color._id.toString())}>Edit Color</button>
+            <button onClick={() => onDelete(color._id.toString())}>Delete Color</button>
         </div>
     );
 };

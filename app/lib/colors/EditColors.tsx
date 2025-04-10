@@ -106,18 +106,37 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate, onColor
             setInitialFormValues({
                 colorName: "",
                 colorValue: "",
-                createdBy: profileId || "", // Assuming you want to set the creator
+                createdBy: profileId || "",
                 complementaryColors: [],
                 contrastingColors: [],
                 colorDescription: ""
             });
-        } else if (colorDetails?.colorName && isAdmin) {
+        } else if (colorDetails?._id && isAdmin) {
             setInitialFormValues({
+                _id: colorDetails._id,
                 colorName: colorDetails.colorName,
                 colorValue: colorDetails.colorValue,
                 createdBy: colorDetails.createdBy,
-                complementaryColors: colorDetails.complementaryColors ? colorDetails.complementaryColors.map(id => typeof id === 'object' && id !== null && '_id' in id ? id._id.toString() : id.toString()) : [],
-                contrastingColors: colorDetails.contrastingColors ? colorDetails.contrastingColors.map(id => typeof id === 'object' && id !== null && '_id' in id ? id._id.toString() : id.toString()) : [],
+                complementaryColors: colorDetails.complementaryColors
+                    ? colorDetails.complementaryColors.map(relatedColor => {
+                        if (relatedColor && typeof relatedColor === 'object' && '_id' in relatedColor) {
+                            return relatedColor._id.toString();
+                        }
+                        // Handle cases where the related color might not be fully populated
+                        console.warn("Unexpected structure in complementaryColors:", relatedColor);
+                        return ''; // Or some other appropriate default
+                    })
+                    : [],
+                contrastingColors: colorDetails.contrastingColors
+                    ? colorDetails.contrastingColors.map(relatedColor => {
+                        if (relatedColor && typeof relatedColor === 'object' && '_id' in relatedColor) {
+                            return relatedColor._id.toString();
+                        }
+                        // Handle cases where the related color might not be fully populated
+                        console.warn("Unexpected structure in contrastingColors:", relatedColor);
+                        return ''; // Or some other appropriate default
+                    })
+                    : [],
                 colorDescription: colorDetails.colorDescription
             });
         } else {
@@ -131,7 +150,7 @@ const EditColors: React.FC<EditColorsProps> = ({ colorId, onColorUpdate, onColor
             });
         }
     }, [colorDetails, isAdmin, isAddingNew, profileId]);
-
+    
     const MDEditorField = ({ field, form }: any) => (
         <MDEditor
             value={field.value}

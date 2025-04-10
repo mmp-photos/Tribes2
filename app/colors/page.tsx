@@ -1,3 +1,4 @@
+// Colors.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { Color, ColorId } from "../lib/types/color";
@@ -15,6 +16,7 @@ const Colors = () => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     useEffect(() => {
         setPageTitle("Colors");
@@ -64,6 +66,34 @@ const Colors = () => {
         setIsAddingNew(false); // Ensure we are not in adding new mode
     };
 
+    // MOVE THIS FUNCTION DEFINITION HERE, BEFORE THE RETURN STATEMENT
+    const handleDeleteColor = async (id: string) => {
+        if (!isAdmin) {
+            setDeleteError("You do not have permission to delete colors.");
+            return;
+        }
+        if (!window.confirm("Are you sure you want to delete this color?")) {
+            return;
+        }
+        try {
+            const res = await fetch(`/api/colors?id=${id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            });
+            if (!res.ok) {
+                const errorData = await res.json(); // Assuming the error response is also JSON
+                throw new Error(errorData.message || `Failed to delete color. Status: ${res.status}`);
+            }
+            console.log(`Color with ID ${id} deleted successfully.`);
+            setColorId(null); // Clear the selected color ID
+            router.push('/colors'); // Redirect to the main colors list
+        } catch (err: any) {
+            setDeleteError(err.message || "An error occurred while deleting the color.");
+            console.error(err);
+        }
+    };
+    
+
     const handleAddNewClick = () => {
         setIsAddingNew(true);
         setColorId(null); // Set colorId to null for the blank form
@@ -78,6 +108,7 @@ const Colors = () => {
 
     return (
         <main>
+            {deleteError && <p className="error-message">{deleteError}</p>}
             {isAddingNew && isAdmin ? (
                 <EditColors
                     colorId={null} // Pass null to indicate adding new
@@ -98,6 +129,7 @@ const Colors = () => {
                 <ColorDetailsDisplay
                     colorId={colorId}
                     onEdit={onEdit}
+                    onDelete={handleDeleteColor} // Now handleDeleteColor is defined before being used
                 />
             ) : (
                 <AllColors onAddNewClick={handleAddNewClick} /* onEditClick should NOT be here */ />

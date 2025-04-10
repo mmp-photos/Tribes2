@@ -24,13 +24,13 @@ export async function GET(req: NextRequest) {
                     colors = await ColorModel.findOne({ _id: idFromQuery, ...findCondition }) // Added findCondition
                         .populate({
                             path: 'complementaryColors',
+                            model: 'Color',
                             select: '_id colorName colorValue',
-                            strictPopulate: false
                         })
                         .populate({
                             path: 'contrastingColors',
+                            model: 'Color',
                             select: '_id colorName colorValue',
-                            strictPopulate: false
                         })
                         .exec();
                     if (!colors) {
@@ -52,13 +52,13 @@ export async function GET(req: NextRequest) {
             colors = await ColorModel.find(findCondition) // Added findCondition
                 .populate({
                     path: 'complementaryColors',
+                    model: 'Color',
                     select: '_id colorName colorValue',
-                    strictPopulate: false
-                })
+            })
                 .populate({
                     path: 'contrastingColors',
+                    model: 'Color',
                     select: '_id colorName colorValue',
-                    strictPopulate: false
                 })
                 .exec();
             return NextResponse.json({ success: true, colors: colors });
@@ -101,5 +101,36 @@ export async function POST(request: Request) {
     } catch (error: any) {
         console.error("Error processing request:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: NextRequest) {
+    try {
+        await connectUsers();
+        const idToDelete = req.nextUrl.searchParams.get('id');
+
+        if (!idToDelete) {
+            return NextResponse.json({ error: "Missing color ID for deletion" }, { status: 400, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(idToDelete)) {
+            return NextResponse.json({ error: "Invalid color ID" }, { status: 400, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        const deletedColor = await ColorModel.findByIdAndUpdate(
+            idToDelete,
+            { status: "deleted" },
+            { new: true }
+        );
+
+        if (!deletedColor) {
+            return NextResponse.json({ error: "Color not found" }, { status: 404, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        return NextResponse.json({ success: true, message: `Color with ID ${idToDelete} marked as deleted.`, headers: { 'Content-Type': 'application/json' } }, { status: 200 });
+
+    } catch (error: any) {
+        console.error("Error deleting color:", error);
+        return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 }

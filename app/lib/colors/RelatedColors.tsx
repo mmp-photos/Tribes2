@@ -21,7 +21,7 @@ const RelatedColors: React.FC<RelatedColorsProps> = ({ colors, title }) => {
                                     <span className="color-swatch-small"
                                     style={{ backgroundColor: `#${relatedColor.colorValue}` }}>&nbsp;</span>
                                 </a>
-                                {relatedColor.colorName}
+                                {/* {relatedColor.colorName} */}
                             </li>
                         );
                     }

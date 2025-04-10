@@ -6,8 +6,8 @@ export interface Color {
     colorValue: string;
     colorDescription?: string; // Optional
     colorFamily?: ObjectId[]; // Optional
-    complementaryColors?: (string | ObjectId)[]; // Accept both strings and ObjectIds
-    contrastingColors?: (string | ObjectId)[]; // Accept both strings and ObjectIds
+    complementaryColors?: Color[]; // Expecting an array of Color objects after population
+    contrastingColors?: Color[];   // Expecting an array of Color objects after population
     status?: string; // Optional
     createdBy?: (string | ObjectId)[];
 }

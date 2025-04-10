@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from "@/app/lib/database/connectUsers";
+import connectUsers from "@/app/lib/database/connectUsers";
+import { UserModel as User } from "@/app/lib/database/models/UserSchema"; // Import the named export
 
 interface CreateUserInput {
     email: string;
@@ -20,8 +21,9 @@ const MONGODB_COLLECTION = process.env.ATLAS_COLLECTION ?? "";
 
 export async function POST(req: Request) {
     try {
+        await connectUsers(); // Ensure database connection
+
         const body = await req.json(); // ✅ Read request body only once
-        const { client, collection } = await connectToDatabase(); // Get client and collection
 
         const userInput: CreateUserInput = {
             email: body.user?.email ?? "", // Required field, ensure it's a string
@@ -41,10 +43,10 @@ export async function POST(req: Request) {
         try {
             let allUsers;
             if(userInput.email){
-                allUsers = await collection.find({ email: searchString }).toArray(); // ✅ Correct
+                allUsers = await User.find({ email: searchString }).exec(); // Use the Mongoose model
             }
             else {
-                allUsers = await collection.find().toArray();
+                allUsers = await User.find().exec(); // Use the Mongoose model
             }
             return NextResponse.json(allUsers);
         } catch (error) {
