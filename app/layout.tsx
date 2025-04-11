@@ -64,7 +64,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div id="flex-wrapper">
       <Header />
-      <main>{children}</main>
+      {children}
       <Footer />
     </div>
   );
