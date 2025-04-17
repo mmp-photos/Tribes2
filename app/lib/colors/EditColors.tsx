@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import * as Yup from "yup";
 import MDEditor from "@uiw/react-md-editor";
+
 import ColorDetailsDisplay from './ColorDetails';
 
 interface EditColorsProps {
