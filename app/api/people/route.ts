@@ -46,9 +46,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(request: Request) {
+    await connectUsers(); // Ensure database connection
     const data = await request.json();
     if (!data._id) {
         const newPerson = await PeopleModel.create({ ...data, status: "ok" });
+        console.log(`New person added to database`);
         return NextResponse.json({ color: newPerson }, { status: 201 });
     }
     else {

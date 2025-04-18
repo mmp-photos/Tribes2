@@ -44,13 +44,14 @@ const AllPeople: React.FC<AllColorsProps> = ({ onAddNewClick }) => {
         <>
             <h2>All People</h2>
             {data ? (
-                <ul className="colors show" id="allPeople">
-                    {isAdmin && <li className="color-swatch" onClick={onAddNewClick}  style={{backgroundColor: "blue"}}>+</li>}
+                <ul id="allPeople">
+
                     {data.map((person) => (
                         <li
                         key={person._id?.toString()}
                         ><a href={`/people?id=${person._id?.toString()}`}>{person.firstName} {person.lastName}</a></li>
                     ))}
+                    {isAdmin && <button onClick={onAddNewClick}>Add Person</button>}
                 </ul>
             ) : (
                 <p>Loading colors...</p>

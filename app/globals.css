@@ -27,6 +27,23 @@
     background-color: var(--bright-secondary);
     margin: 0px;
   }
+  button{
+    margin-top: 1rem;
+    margin-right: .5rem;
+    background-color: var(--background-primary);
+    font-family: gastromond, serif;
+    color: var(--white);
+    height: 2rem;
+    width: 9rem;
+  }
+  button:hover{
+    margin-top: 1rem;
+    background-color: var(--background-secondary);
+    font-family: gastromond, serif;
+    color: var(--mid-secondary);
+    height: 2rem;
+    width: 9rem;
+  }
   #flex-wrapper{
     display: flex;
     min-height: 100vh;
@@ -166,7 +183,9 @@
   .w-md-editor-content{
     background-color: var(--background-secondary);
   }
-
+  li{
+    display: block;
+  }
   li.hovered{
     display: flex;
     flex-direction: row;

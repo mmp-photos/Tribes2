@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { People } from "../types/people";
+import HandleNickName from "./HandleNickName";
 
 interface PersonDetailsDisplayProps {
     personId: string;
@@ -30,7 +31,7 @@ const PersonDetailsDisplay: React.FC<PersonDetailsDisplayProps> = ({ personId, o
                     throw new Error(errorData.message || `Failed to fetch person. Status: ${res.status}`);
                 }
                 const result = await res.json();
-                console.log(`Result is ${result.person?.firstName}`); // Use optional chaining in case person is null/undefined
+                // console.log(`Result is ${result.person?.firstName}`);
                 if (result.person) { // Check if result.person exists (it's the person object)
                     setPerson(result.person);
                 } else {
@@ -53,7 +54,7 @@ const PersonDetailsDisplay: React.FC<PersonDetailsDisplayProps> = ({ personId, o
     }, [personId]);
 
     if (loading) {
-        return <p>Loading color details...</p>;
+        return <p>Loading person details...</p>;
     }
 
     if (error) {
@@ -66,7 +67,7 @@ const PersonDetailsDisplay: React.FC<PersonDetailsDisplayProps> = ({ personId, o
 
     return (
         <div>
-            <h2>{person.firstName} {person.lastName}</h2>
+            <h2><HandleNickName person={person} /></h2>
             <p>Biography: {person.biography}</p>
             <button onClick={() => onEdit(person._id.toString())}>Edit Person</button>
             <button onClick={() => onDelete(person._id.toString())}>Delete Person</button>

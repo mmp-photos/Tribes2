@@ -100,8 +100,8 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                 lastName: "",
                 nickname: "",
                 biography: "",
-                dob: null,
-                dod: null,
+                dob: "", // Changed to empty string
+                dod: "", // Changed to empty string
                 icon: false,
                 defaultPhoto: {},
                 additionalPhotos: [],
@@ -114,10 +114,10 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                 _id: personDetails._id,
                 firstName: personDetails.firstName,
                 lastName: personDetails.lastName,
-                nickName: personDetails.nickName || "", // Add a fallback in case nickname is undefined
-                biography: personDetails.biography || "", // Use personDetails.biography here with a fallback
-                dob: personDetails.dob,
-                dod: personDetails.dod,
+                nickName: personDetails.nickName || "",
+                biography: personDetails.biography || "",
+                dob: personDetails.dob || "", // Use personDetails.dob if available, otherwise ""
+                dod: personDetails.dod || "", // Use personDetails.dod if available, otherwise ""
                 icon: personDetails.icon,
                 defaultPhoto: personDetails.defaultPhoto,
                 additionalPhotos: personDetails.additionalPhotos,
@@ -131,8 +131,8 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                 lastName: "",
                 nickName: "",
                 biography: "",
-                dob: null,
-                dod: null,
+                dob: "", // Changed to empty string
+                dod: "", // Changed to empty string
                 icon: false,
                 defaultPhoto: {},
                 additionalPhotos: [],
@@ -193,6 +193,26 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                                 <label htmlFor="lastName">Last Name</label>
                                 <Field type="text" name="lastName" />
                                 <ErrorMessage name="lastName" component="div" className="lastName" />
+                            </div>
+                            <div>
+                                <label htmlFor="nickName">Nick Name</label>
+                                <Field type="text" name="nickName" />
+                                <ErrorMessage name="nickName" component="div" className="nickName" />
+                            </div>
+                            <div>
+                                <label htmlFor="icon">Icon Status</label>
+                                <Field type="checkbox" name="icon" />
+                                <ErrorMessage name="icon" component="div" className="dob" />
+                            </div>
+                            <div>
+                                <label htmlFor="dob">Date of Death</label>
+                                <Field type="date" name="dob" />
+                                <ErrorMessage name="dob" component="div" className="dob" />
+                            </div>
+                            <div>
+                                <label htmlFor="dod">Date of Death</label>
+                                <Field type="date" name="dod" />
+                                <ErrorMessage name="dod" component="div" className="dod" />
                             </div>
                             <div>
                                 <label htmlFor="biography">Biography</label>
