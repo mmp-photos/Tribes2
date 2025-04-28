@@ -5,12 +5,6 @@ import LogoutButton from "./lib/buttons/Logout";
 import { useAuth } from "./context/AuthContext";
 
 const header = () => {
-    
-  // const [ loggedIN, setLoggedIn ] = useState(false);
-  // if(user.profileID != null){
-  //   setLoggedIn(true);
-  // }
-
   return (
     <header>
       <h1>Tribes of Men</h1>

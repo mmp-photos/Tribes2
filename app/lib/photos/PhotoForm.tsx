@@ -21,7 +21,6 @@ const PhotoForm: React.FC = () => {
       <h1>Upload an Image</h1>
       <ImageUploadForm onImageUploaded={handleImageUploaded} onError={handleUploadError} />
       {uploadStatus && <p>{uploadStatus}</p>}
-      <img src="/images/uploads/1744910921024-nt7p4e9.jpg" alt="Test photo"/>
     </div>
   );
 };

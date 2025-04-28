@@ -5,12 +5,13 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Tribes of Men',
   description: 'An aethetic finder for men and all masc folx'
+  
 };
 
 export default function Home() {
   const envTest = process.env.DB_HOST;
-  console.log(envTest);
-  console.log(`Testing the console.`)
+  // console.log(envTest);
+  // console.log(`Testing the console.`)
   return (
     <Container fluid >
       <Row className="remove-all-margin-padding" style={{height: "100vh"}}>

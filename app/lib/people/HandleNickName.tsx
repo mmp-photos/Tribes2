@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { People, PersonId } from "../types/people";
+import { People, PersonName } from "../types/people";
 
 interface HandleNickNameProps {
-    person: People;
+    person: PersonName;
 }
 
 const HandleNickName: React.FC<HandleNickNameProps> = ({ person }) => {
@@ -18,7 +18,7 @@ const HandleNickName: React.FC<HandleNickNameProps> = ({ person }) => {
     }, []);
     console.log(person.firstName);
     return(
-        <p>{displayName}</p>
+        <>{displayName}</>
     )
 };
 

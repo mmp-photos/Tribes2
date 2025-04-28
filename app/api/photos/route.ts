@@ -2,8 +2,10 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import formidable from 'formidable'; // We might not need formidable directly
 import { NextRequest, NextResponse } from 'next/server';
+import { PhotoModel } from "@/app/lib/database/models/PhotoSchema";
+import mongoose from 'mongoose';
+import connectUsers from "../../lib/database/connectUsers";
 
 // Configure the directory to save uploaded images
 const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads');
@@ -21,7 +23,7 @@ async function ensureDirectoryExists(dir: string) {
 
 export const config = {
   api: {
-    bodyParser: false, // Still important to disable default parsing
+    bodyParser: false, // Important to disable default parsing for FormData
   },
 };
 
@@ -29,11 +31,50 @@ export async function POST(req: NextRequest) {
   try {
     await ensureDirectoryExists(uploadDir);
     const formData = await req.formData();
-    const photoFile = formData.get('photo') as File | null;
+    const photoFile = formData.get('photo') as File | null; // Be explicit about possible null
+    const category = formData.get('category') as string | null;
+    const sourceUrl = formData.get('sourceUrl') as string | null;
+    const referenceString = formData.get('reference') as string | null;
+    const copyrightType = formData.get('copyrightType') as string | null;
+    const creditName = formData.get('creditName') as string | null;
+    const creditUrl = formData.get('creditUrl') as string | null;
+    const date = formData.get('date') as string | null;
+    const defaultCaption = formData.get('defaultCaption') as string | null;
+    const uploadedByString = formData.get('profileId') as string | null
+
+    let referenceObjectId: mongoose.Types.ObjectId | null = null;
+
+    if (referenceString) {
+      try {
+        referenceObjectId = new mongoose.Types.ObjectId(referenceString);
+      } catch (error) {
+        console.error('Error converting reference to ObjectId:', error);
+        return NextResponse.json({ error: 'Invalid reference ID format.' }, { status: 400 });
+      }
+    }
+
+    let uploadedByObjectId: mongoose.Types.ObjectId | null = null;
+
+    if (uploadedByString) {
+      try {
+        uploadedByObjectId = new mongoose.Types.ObjectId(uploadedByString);
+      } catch (error) {
+        console.error('Error converting reference to ObjectId:', error);
+        return NextResponse.json({ error: 'Invalid reference ID format.' }, { status: 400 });
+      }
+    }
+
+    console.log('Form Data:', Object.fromEntries(formData.entries())); // Log all form data
 
     if (!photoFile) {
       return NextResponse.json({ error: 'No photo file uploaded.' }, { status: 400 });
     }
+
+    if (!category) {
+      return NextResponse.json({ error: 'Category is required.' }, { status: 400 });
+    }
+
+    // You can do similar checks for other required text fields
 
     if (photoFile.size > 2.5 * 1024 * 1024) {
       return NextResponse.json({ error: 'Image size exceeds the limit of 2.5MB.' }, { status: 400 });
@@ -47,13 +88,40 @@ export async function POST(req: NextRequest) {
     const buffer = await photoFile.arrayBuffer();
     const bytes = new Uint8Array(buffer);
 
+    // Ensure the category directory exists within the uploads directory
+    const categoryDir = path.join(uploadDir, category);
+    await ensureDirectoryExists(categoryDir);
+
     const newFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}${path.extname(photoFile.name)}`;
-    const newPath = path.join(uploadDir, newFileName);
+    const newPath = path.join(categoryDir, newFileName);
 
+    //Upload image to server//
     await fs.writeFile(newPath, Buffer.from(bytes));
-    const imageUrl = `/images/uploads/${newFileName}`;
+    const imageUrl = `/images/uploads/${category}/${newFileName}`;
 
-    return NextResponse.json({ message: 'Photo uploaded successfully!', imageUrl }, { status: 200 });
+    //Add image data to database//
+    await connectUsers(); // Ensure database connection
+  
+    let fileName = newFileName;
+
+    const data = [category, sourceUrl, fileName, copyrightType, creditName, creditUrl, date, defaultCaption, uploadedByObjectId]
+
+    const newPhoto = await PhotoModel.create({
+      category: category,
+      sourceUrl: sourceUrl,
+      fileName: fileName, // Assuming you have this field in your schema
+      copyrightType: copyrightType,
+      creditName: creditName,
+      creditUrl: creditUrl,
+      date: date,
+      defaultCaption: defaultCaption,
+      uploadedBy: uploadedByObjectId,
+      status: "ok",
+    });
+    
+    console.log(`New photo added to database`);
+    return NextResponse.json({ photo: newPhoto, imageUrl: imageUrl }, { status: 201 });
+    // return NextResponse.json({ message: 'Photo uploaded successfully!', imageUrl }, { status: 200 });
 
   } catch (error: any) {
     console.error('Upload error:', error);

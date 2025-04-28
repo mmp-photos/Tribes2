@@ -19,6 +19,8 @@
       --white: #e8dff4;
       --true-black: black;
       --true-white: white;
+      --sans-serif: "fira-sans", sans-serif;
+      --font-light: "100";
       padding: 0px;
       margin: 0px;
   }
@@ -60,7 +62,7 @@
   main{
     min-height: calc(100vh - 15rem);
     background-color: var(--white);
-    padding:  0rem 1.5rem;
+    padding:  0rem 1.5rem 6rem;
   }
   footer{
     max-height: 5rem;
@@ -117,6 +119,10 @@
     border-color: purple;
     padding: 5rem;
   }
+  /* form {
+    display: grid;
+    grid-template-columns: repeat(2, .5fr, 1.5fr);
+  } */
   h1{
     font-family: gastromond, serif;
     font-weight: 400;
@@ -139,6 +145,23 @@
   .hide{
     display: none;
   }
+  label {
+    display: inline-block;
+    background-color: none;
+    margin-bottom: 1rem;
+    margin-right: 1.5rem;
+    width: 5rem;
+    text-align: right;
+    font-family: var(--sans-serif);
+    font-weight: var(--font-light);
+    font-size: .75rem;
+  }
+  /* label::after {
+    display: inline-block;
+    content: ":";
+    margin-right: .25rem;
+    margin-left: .25rem;
+  } */
   li.color-swatch{
     display: flex;
     flex-direction: row;

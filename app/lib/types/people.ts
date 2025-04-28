@@ -26,4 +26,12 @@ export interface People {
     createdBy?: (string | ObjectId)[];
 }
 
+export interface PersonName {
+    _id: string | ObjectId;
+    firstName?: string;
+    lastName?: string;
+    nickName?: string[];
+    status: string;
+}
+
 export type PersonId = string | ObjectId;
