@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import { useAuth } from "../../context/AuthContext";
 import { People, PersonId } from "../types/people";
+import { Vibes, VibeId } from "../types/vibes";
 import HandleNickName from "../people/HandleNickName";
 import * as Yup from "yup";
 import MDEditor from "@uiw/react-md-editor";
@@ -29,13 +30,11 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onImageUploaded, onEr
   const { isAdmin, profileId } = useAuth();
   const [personDetails, setPersonDetails] = useState<People | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [initialFormValues, setInitialFormValues] = useState<any>(null);
-  const [data, setData] = useState<People[]>([]);
-  const formikRef = useRef<FormikProps<People>>(null);
   const [category, setCategory] = useState('');
   const [referenceOptions, setReferenceOptions] = useState<
     { value: string; label: string; person?: Person }[]
   >([]);
+  const [markdownValue, setMarkdownValue] = useState<string | undefined>("");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -87,7 +86,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onImageUploaded, onEr
     const creditNameValue = (formElement.creditName as HTMLInputElement)?.value;
     const creditUrlValue = (formElement.creditUrl as HTMLInputElement)?.value;
     const dateValue = (formElement.date as HTMLInputElement)?.value;
-    const defaultCaptionValue = (formElement.defaultCaption as HTMLInputElement)?.value;
+    const defaultCaptionValue = markdownValue || ""; // Provide default for markdownValue as well
 
     const formData = new FormData();
     formData.append('photo', selectedFile);
@@ -154,11 +153,23 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onImageUploaded, onEr
         console.error('Error fetching persons:', error);
         setReferenceOptions([{ value: '', label: 'Error loading persons' }]);
       }
-    } else if (selectedCategory === 'tribe') {
-      setReferenceOptions([
-        { value: 'tribeB1', label: 'Tribe B1' },
-        { value: 'tribeB2', label: 'Tribe B2' },
-      ]);
+    } else if (selectedCategory === 'vibes') {
+      const response = await fetch('/api/vibes');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log(result);
+
+      const vibes: Vibes[] = result.vibe || [];
+
+      const vibeOptions = vibes
+        .filter((vibe) => vibe.status === 'ok')
+        .map((vibe) => ({
+          value: vibe._id.toString(), // Convert ObjectId to string
+          label: vibe.vibe, // Label will be rendered by HandleNickName
+        }));
+      setReferenceOptions(vibeOptions as { value: string; label: string; vibe?: Vibes | undefined; }[]);
     } else if (selectedCategory === 'garment') {
       setReferenceOptions([
         { value: 'garmentC1', label: 'Garment C1' },
@@ -179,6 +190,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onImageUploaded, onEr
           <option value="">&nbsp;</option>
           <option value="person">Person</option>
           <option value="tribe">Tribe</option>
+          <option value="vibes">Vibes</option>
           <option value="garment">Garment</option>
         </select>
       </div>
@@ -238,7 +250,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onImageUploaded, onEr
       </div>
       <div>
           <label htmlFor="defaultCaption">Default Caption</label>
-          <MDEditor id="defaultCaption" />
+          <MDEditor value={markdownValue} onChange={setMarkdownValue} />
       </div>
       <button type="submit" disabled={!selectedFile}>Upload</button>
     </form>

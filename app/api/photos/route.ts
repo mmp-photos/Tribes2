@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { PhotoModel } from "@/app/lib/database/models/PhotoSchema";
+import { PeopleModel } from "@/app/lib/database/models/PeopleSchema";
 import mongoose from 'mongoose';
 import connectUsers from "../../lib/database/connectUsers";
 
@@ -89,22 +90,22 @@ export async function POST(req: NextRequest) {
     const bytes = new Uint8Array(buffer);
 
     // Ensure the category directory exists within the uploads directory
-    const categoryDir = path.join(uploadDir, category);
-    await ensureDirectoryExists(categoryDir);
 
     const newFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}${path.extname(photoFile.name)}`;
+    const subFolder = newFileName.slice(0, 2);
+    const categoryDir = path.join(uploadDir, subFolder);
+    await ensureDirectoryExists(categoryDir);
+
     const newPath = path.join(categoryDir, newFileName);
 
     //Upload image to server//
     await fs.writeFile(newPath, Buffer.from(bytes));
-    const imageUrl = `/images/uploads/${category}/${newFileName}`;
+    const imageUrl = `/images/uploads/${subFolder}/${newFileName}`;
 
     //Add image data to database//
     await connectUsers(); // Ensure database connection
   
     let fileName = newFileName;
-
-    const data = [category, sourceUrl, fileName, copyrightType, creditName, creditUrl, date, defaultCaption, uploadedByObjectId]
 
     const newPhoto = await PhotoModel.create({
       category: category,
@@ -118,10 +119,34 @@ export async function POST(req: NextRequest) {
       uploadedBy: uploadedByObjectId,
       status: "ok",
     });
+
+
     
     console.log(`New photo added to database`);
-    return NextResponse.json({ photo: newPhoto, imageUrl: imageUrl }, { status: 201 });
-    // return NextResponse.json({ message: 'Photo uploaded successfully!', imageUrl }, { status: 200 });
+    //Update Peoples collection to include the new photo//
+    if (referenceObjectId) {
+      try {
+        const updatedPerson = await mongoose.model('People').updateOne(
+          { _id: referenceObjectId },
+          { $push: { additionalPhotos: {photoId: newPhoto._id, caption: "test"} } }
+        );
+
+        console.log('Updated Person:', updatedPerson);
+
+      } catch (updateError: any) {
+        console.error('Error updating People collection:', updateError);
+        // Handle the error appropriately (e.g., return an error response)
+        return NextResponse.json({ error: 'Failed to update People collection.' }, { status: 500 });
+      }
+    }
+    // You can now include the _id in your JSON response
+    return NextResponse.json({
+      photo: newPhoto,
+      imageUrl: imageUrl,
+      _id: newPhoto._id.toString(), // Convert ObjectId to string for JSON
+    }, { status: 201 });
+
+
 
   } catch (error: any) {
     console.error('Upload error:', error);

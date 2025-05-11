@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectUsers from "../../lib/database/connectUsers";
 import { PeopleModel } from "@/app/lib/database/models/PeopleSchema";
+import AdditionalPhotoSchema from "@/app/lib/database/models/additionalPhotos";
 import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
+    
     try {
         await connectUsers(); // Ensure database connection
+        const { PhotoModel } = await import("@/app/lib/database/models/PhotoSchema");
 
         const idFromQuery = req.nextUrl.searchParams.get('id');
 
@@ -21,7 +24,7 @@ export async function GET(req: NextRequest) {
             console.log(`Returning person with id: ${idFromQuery} and status: "ok"`);
             try {
                 if (mongoose.Types.ObjectId.isValid(idFromQuery)) {
-                    people = await PeopleModel.findOne({ _id: idFromQuery, ...findCondition });
+                    people = await PeopleModel.findOne({ _id: idFromQuery, ...findCondition }).populate('additionalPhotos.photoId').populate('defaultPhoto')
                     if (!people) {
                         return NextResponse.json({ error: "Person not found or status is not 'ok'" }, { status: 404 });
                     }

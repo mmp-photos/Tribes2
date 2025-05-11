@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { People } from "../types/people";
 import HandleNickName from "./HandleNickName";
+import AdditionalPhotosList from "../photos/PeoplePhotos";
+import FormatDate from '../database/FormatDate';
+import { useAuth } from "../../context/AuthContext";
 
 interface PersonDetailsDisplayProps {
     personId: string;
@@ -14,6 +17,7 @@ const PersonDetailsDisplay: React.FC<PersonDetailsDisplayProps> = ({ personId, o
     const [person, setPerson] = useState<People | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const { isAdmin } = useAuth();
 
     useEffect(() => {
         const fetchPersonDetails = async () => {
@@ -46,7 +50,7 @@ const PersonDetailsDisplay: React.FC<PersonDetailsDisplayProps> = ({ personId, o
         };
 
         if (personId) {
-            fetchPersonDetails();
+            fetchPersonDetails()
         } else {
             setPerson(null);
             setLoading(false);
@@ -64,13 +68,37 @@ const PersonDetailsDisplay: React.FC<PersonDetailsDisplayProps> = ({ personId, o
     if (!person) {
         return <p>No color details to display.</p>;
     }
+    console.log(`Found this person in the database ${JSON.stringify(person, null, 2)}`);
 
     return (
         <div>
             <h2><HandleNickName person={person} /></h2>
             <p>Biography: {person.biography}</p>
-            <button onClick={() => onEdit(person._id.toString())}>Edit Person</button>
-            <button onClick={() => onDelete(person._id.toString())}>Delete Person</button>
+            <p>DOB: {FormatDate(person.dob)}</p>
+            {person.additionalPhotos && (
+                <AdditionalPhotosList
+                    additionalPhotos={person.additionalPhotos.map(item => (
+                        item.photoId ? {
+                            photoId: {
+                                _id: item.photoId._id,
+                                fileName: item.photoId.fileName,
+                                url: item.photoId.url,
+                                creditName: item.photoId.creditName,
+                                creditUrl: item.photoId.creditUrl,
+                                defaultCaption: item.photoId.defaultCaption,
+                            },
+                            caption: item.caption,
+                        } : null
+                    )).filter(item => item !== null)}
+                />
+            )}
+
+            {isAdmin ? (
+            <>
+                <button onClick={() => onEdit(person._id.toString())}>Edit Person</button>
+                <button onClick={() => onDelete(person._id.toString())}>Delete Person</button>
+            </>
+            ) : null}
         </div>
     );
 };

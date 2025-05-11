@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { Photo } from "./photo";
 import { Reaction } from "./reaction";
-import { Comment } from "./comment";
+import type { Comment } from "./comment";
 
 export interface DefaultPhoto {
     photoId?: ObjectId;
@@ -17,8 +17,20 @@ export interface People {
     dob?: Date;
     dod?: Date;
     icon: Boolean;
+    fictional: Boolean;
     defaultPhoto?: DefaultPhoto;
-    additionalPhotos?: Photo[];
+    additionalPhotos?: { 
+        _id: false,
+        photoId: { // Each object has a photoId property which is an object
+            _id: string;
+            fileName: string;
+            url?: string;
+            creditName?: string;
+            creditUrl?: string;
+            defaultCaption?: string;
+        };
+        caption?: string; // Each object also has a caption property
+    }[];
     connections: People[];
     reactions: Reaction[];
     comments: Comment[];

@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, models } from "mongoose";
+import AdditionalPhotoSchema from './additionalPhotos.js'; // Adjust the import path as needed
 
 const peopleSchema = new Schema(
   {
@@ -19,25 +20,28 @@ const peopleSchema = new Schema(
       { type: String}
     ,
     dob:
-      [{ type: Date}]
+      { type: Date}
     ,
     dod:
-      [{ type: Date}]
+      { type: Date}
     ,
     icon: {
       type: Boolean,
       default: false
     },
+    icon: {
+      type: Boolean,
+      default: false
+    },
     defaultPhoto:
-      { caption: {type: String}, photo: {type: mongoose.Schema.Types.ObjectId, ref: "Photo" }}
+      { caption: {type: String}, photoId: {type: mongoose.Schema.Types.ObjectId, ref: "Photo" }}
     ,
-    additionalPhotos:
-      [{ type: mongoose.Schema.Types.ObjectId, ref: "Photo"}]
+    additionalPhotos: [AdditionalPhotoSchema]
     ,
     connections:
       [{connectionType: {type: String}, connection:{ type: mongoose.Schema.Types.ObjectId, ref: "People" }}]
     ,
-    reations:
+    reactions:
       [{reactionType: {type: mongoose.Schema.Types.ObjectId, ref: "Reaction"}, reactionPerson: { type: mongoose.Schema.Types.ObjectId, ref: "People"}}]
     ,
     comments:

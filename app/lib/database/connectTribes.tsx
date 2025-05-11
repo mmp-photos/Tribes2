@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const MONGODB_URI: string = process.env.ATLAS_URI ?? "";
+import "@/app/lib/database/models/PeopleSchema";
 
 if (!MONGODB_URI) {
     throw new Error("ATLAS_URI is not defined in environment variables.");

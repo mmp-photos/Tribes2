@@ -54,7 +54,7 @@ const AllPeople: React.FC<AllColorsProps> = ({ onAddNewClick }) => {
                     {isAdmin && <button onClick={onAddNewClick}>Add Person</button>}
                 </ul>
             ) : (
-                <p>Loading colors...</p>
+                <p>Loading people...</p>
             )}
         </>
     );

@@ -16,7 +16,7 @@ const HandleNickName: React.FC<HandleNickNameProps> = ({ person }) => {
             setDisplayName(`${person.firstName} ${person.lastName}`)
         }
     }, []);
-    console.log(person.firstName);
+    // console.log(person.firstName);
     return(
         <>{displayName}</>
     )

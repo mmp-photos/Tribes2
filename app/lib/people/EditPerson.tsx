@@ -5,11 +5,20 @@ import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import { useAuth } from "../../context/AuthContext";
 import * as Yup from "yup";
 import MDEditor from "@uiw/react-md-editor";
+import BooleanCheckbox from "../database/CheckBox";
+import FormatDate from '../database/FormatDate';
 
 interface EditPersonProps {
     peopleId: string | null; // Allow null for adding new
     onPersonUpdate: (updatedPerson: People) => void;
     onPersonAdded?: (newPerson: People) => void;
+}
+
+interface CheckProps {
+    props: {
+        name: string | null,
+
+    }
 }
 
 const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPersonAdded }) => {
@@ -18,15 +27,20 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
     const { isAdmin, profileId } = useAuth();
     const [personDetails, setPersonDetails] = useState<People | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [initialFormValues, setInitialFormValues] = useState<any>(null);
+    const [initialFormValues, setInitialFormValues] = useState<any>(null); // Initialize to null
+
     const [data, setData] = useState<People[]>([]);
     const formikRef = useRef<FormikProps<People>>(null);
+    const [loadingDetails, setLoadingDetails] = useState(false);
 
     const fetchPersonDetails = async () => {
         if (!peopleId) {
-            setPersonDetails(null); // No need to fetch if adding new
+            setPersonDetails(null);
+            setInitialFormValues(null); // Reset initialFormValues as well
             return;
         }
+        setLoadingDetails(true);
+        setError(null);
         try {
             const res = await fetch(`/api/people?id=${encodeURIComponent(peopleId)}`, {
                 method: "GET",
@@ -43,25 +57,17 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
         } catch (err) {
             setError("There was an error fetching person details.");
             console.error(err);
+        } finally {
+            setLoadingDetails(false);
         }
     };
 
     useEffect(() => {
         fetchPersonDetails();
-        if(personDetails){
-        console.log(`The person loaded by fetchPersonDetails is ${personDetails.firstName}`)
-        }
-        else {
-            console.log(`No person returned`);
-        }
     }, [peopleId]);
 
     const startAddNew = () => {
         setIsAddingNew(true);
-        // Optionally reset personId if it's being passed down
-        // if (personId) {
-        //   onPersonUpdate(null); // Or however you signal a reset
-        // }
     };
 
     const updatePeople = async (values: People) => {
@@ -79,10 +85,8 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
 
             const result = await res.json();
             if (result.person._id && !peopleId) {
-                // New person added
                 onPersonAdded?.(result.person);
                 setIsAddingNew(false); // Reset to edit mode
-                // Optionally clear the form or navigate
             } else {
                 onPersonUpdate(result.person); // Existing person updated
             }
@@ -94,21 +98,40 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
     };
 
     useEffect(() => {
+        const formatDateForInput = (dateString: string | Date | null | undefined): string => {
+            if (!dateString) {
+                return '';
+            }
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '';
+            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            console.log(`New date is ${year}-${month}-${day}`);
+            return `${year}-${month}-${day}`;
+        };
+
         if (isAddingNew) {
-            setInitialFormValues({
+            setInitialFormValues({ 
                 firstName: "",
                 lastName: "",
-                nickname: "",
+                nickName: "",
                 biography: "",
-                dob: "", // Changed to empty string
-                dod: "", // Changed to empty string
+                dob: new Date().toISOString().split('T')[0],
+                dod: new Date().toISOString().split('T')[0],
                 icon: false,
-                defaultPhoto: {},
+                fictional: false,
+                defaultPhoto: {
+                    photoId: "",
+                    caption: ""
+                },
                 additionalPhotos: [],
                 connections: [],
                 status: "ok",
-                createdBy: profileId || "",
-            });
+                createdBy: "",
+             });
         } else if (personDetails?._id && isAdmin) {
             setInitialFormValues({
                 _id: personDetails._id,
@@ -116,9 +139,10 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                 lastName: personDetails.lastName,
                 nickName: personDetails.nickName || "",
                 biography: personDetails.biography || "",
-                dob: personDetails.dob || "", // Use personDetails.dob if available, otherwise ""
-                dod: personDetails.dod || "", // Use personDetails.dod if available, otherwise ""
+                dob: formatDateForInput(personDetails.dob),
+                dod: formatDateForInput(personDetails.dod),
                 icon: personDetails.icon,
+                fictional: personDetails.fictional,
                 defaultPhoto: personDetails.defaultPhoto,
                 additionalPhotos: personDetails.additionalPhotos,
                 connections: personDetails.connections,
@@ -126,26 +150,12 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                 createdBy: personDetails.createdBy,
             });
         } else {
-            setInitialFormValues({
-                firstName: "",
-                lastName: "",
-                nickName: "",
-                biography: "",
-                dob: "", // Changed to empty string
-                dod: "", // Changed to empty string
-                icon: false,
-                defaultPhoto: {},
-                additionalPhotos: [],
-                connections: [],
-                status: "ok",
-                createdBy: profileId || "",
-            });
+            setInitialFormValues(null); // Or some default empty object if needed
         }
     }, [personDetails, isAdmin, isAddingNew, profileId]);
-    
+
     const handleCancelAdd = () => {
         setIsAddingNew(false);
-        // Optionally reset the form or navigate
     };
 
     let biography = "Are you going to go my way.";
@@ -161,18 +171,17 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
         />
     );
     
-
-    return(
+    return (
         <div>
-            {!isAddingNew && !personDetails && (
+            {!isAddingNew && !personDetails && !loadingDetails && (
                 <button onClick={startAddNew}>Add New Person</button>
             )}
 
-            {(isAddingNew || (personDetails && initialFormValues)) ? (
+            {(isAddingNew || initialFormValues) ? ( // Only render Formik if initialFormValues is populated
                 <Formik
                     innerRef={formikRef}
-                    initialValues={initialFormValues}
-                    enableReinitialize={true}
+                    initialValues={initialFormValues || {}} // Provide an empty object as fallback
+                    // enableReinitialize={false} // Removed
                     validationSchema={Yup.object({
                         firstName: Yup.string().required("Person first name is required"),
                         lastName: Yup.string().required("Person last name is required"),
@@ -198,16 +207,17 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                                 <label htmlFor="nickName">Nick Name</label>
                                 <Field type="text" name="nickName" />
                                 <ErrorMessage name="nickName" component="div" className="nickName" />
+                            </div>                    
+                            <div>
+                                <BooleanCheckbox name="icon" label="Icon" />
                             </div>
                             <div>
-                                <label htmlFor="icon">Icon Status</label>
-                                <Field type="checkbox" name="icon" />
-                                <ErrorMessage name="icon" component="div" className="dob" />
+                                <BooleanCheckbox name="fictioanl" label="Fictional Character" />
                             </div>
                             <div>
-                                <label htmlFor="dob">Date of Death</label>
+                                <label htmlFor="dob">Date of Birth</label>
                                 <Field type="date" name="dob" />
-                                <ErrorMessage name="dob" component="div" className="dob" />
+                                <ErrorMessage name="dob" component="div" className="dod" />
                             </div>
                             <div>
                                 <label htmlFor="dod">Date of Death</label>
@@ -231,7 +241,7 @@ const EditPerson: React.FC<EditPersonProps> = ({ peopleId, onPersonUpdate, onPer
                     )}
                 </Formik>
             ) : (
-                isAdmin && <p>Loading person details...</p>
+                isAdmin && loadingDetails ? <p>Loading person details...</p> : null
             )}
             {error && <p className="error-message">{error}</p>}
         </div>
